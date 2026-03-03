@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheatley HS Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+:root {
+    --bg-primary: #f4f5f7;
+    --bg-card: #ffffff;
+    --bg-header: #1B365D;
+    --bg-header-accent: #2a4a7f;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6c757d;
+    --text-on-dark: #ffffff;
+    --wheatley-gold: #C8A951;
+    --wheatley-blue: #1B365D;
+    --color-wheatley: #C8A951;
+    --color-state: #4C72B0;
+    --color-hisd: #55A868;
+    --color-peer: #DD8452;
+    --color-a: #28a745;
+    --color-b: #17a2b8;
+    --color-c: #ffc107;
+    --color-d: #fd7e14;
+    --color-f: #dc3545;
+    --positive: #28a745;
+    --negative: #dc3545;
+    --gap: 16px;
+    --radius: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.dashboard-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: var(--gap);
+}
+
+/* HEADER */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--bg-header) 0%, var(--bg-header-accent) 100%);
+    color: var(--text-on-dark);
+    padding: 24px 32px;
+    border-radius: var(--radius);
+    margin-bottom: var(--gap);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-left h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.header-left .subtitle {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--wheatley-gold);
+    color: var(--wheatley-blue);
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.header-badge .score-detail {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+/* TABS */
+.tab-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: var(--gap);
+    background: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    overflow-x: auto;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover { background: #f0f0f0; color: var(--text-primary); }
+.tab-btn.active { background: var(--wheatley-blue); color: white; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* KPI CARDS */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+
+.kpi-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.kpi-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.kpi-change {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.kpi-change.positive { color: var(--positive); }
+.kpi-change.negative { color: var(--negative); }
+.kpi-change.neutral { color: var(--text-secondary); }
+
+.rating-badge {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 36px;
+    font-weight: 700;
+    font-size: 18px;
+    color: white;
+}
+
+.rating-A { background: var(--color-a); }
+.rating-B { background: var(--color-b); }
+.rating-C { background: var(--color-c); color: #333; }
+.rating-D { background: var(--color-d); }
+.rating-F { background: var(--color-f); }
+
+/* CHART CONTAINERS */
+.chart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+
+.chart-row.single {
+    grid-template-columns: 1fr;
+}
+
+.chart-container {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.chart-container h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.chart-container .chart-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.chart-container canvas {
+    max-height: 320px;
+}
+
+.chart-container.tall canvas {
+    max-height: 450px;
+}
+
+/* FILTER BAR */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--gap);
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.filter-bar label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-bar select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+}
+
+/* DATA TABLE */
+.table-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    overflow-x: auto;
+    margin-bottom: var(--gap);
+}
+
+.table-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.data-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #dee2e6;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.data-table thead th:hover { color: var(--text-primary); background: #f8f9fa; }
+
+.data-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table tbody tr:hover { background: #f8f9fa; }
+.data-table tbody tr.highlight { background: #fff8e1; font-weight: 600; }
+.data-table tbody tr.highlight:hover { background: #fff3cd; }
+
+.mini-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    color: white;
+}
+
+/* SECTION INFO */
+.section-info {
+    background: #e8f4fd;
+    border-left: 4px solid var(--color-state);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: var(--gap);
+    font-size: 13px;
+    color: #1a4a6e;
+}
+
+/* LEGEND */
+.legend-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: var(--gap);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+/* FOOTER */
+.dashboard-footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .dashboard-header { flex-direction: column; align-items: flex-start; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .chart-row { grid-template-columns: 1fr; }
+    .tab-nav { flex-wrap: nowrap; overflow-x: auto; }
+}
+
+@media print {
+    body { background: white; }
+    .tab-nav { display: none; }
+    .tab-content { display: block !important; page-break-before: always; }
+    .chart-container { break-inside: avoid; }
+}
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>Wheatley High School</h1>
+            <div class="subtitle">Houston ISD &bull; Harris County &bull; Campus #101912018 &bull; TEA Performance Dashboard</div>
+        </div>
+        <div class="header-badge">
+            <span>B</span>
+            <span class="score-detail">85/100 &bull; 2025</span>
+        </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('overview')">The Big Picture</button>
+        <button class="tab-btn" onclick="switchTab('staar')">STAAR Performance</button>
+        <button class="tab-btn" onclick="switchTab('progress')">School Progress & Growth</button>
+        <button class="tab-btn" onclick="switchTab('equity')">Closing the Gaps</button>
+        <button class="tab-btn" onclick="switchTab('outcomes')">Outcomes</button>
+        <button class="tab-btn" onclick="switchTab('peers')">Peer Comparison</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 1: THE BIG PICTURE -->
+    <!-- ============================================================ -->
+    <div id="tab-overview" class="tab-content active">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">2025 Overall Rating</div>
+                <div class="kpi-value"><span class="rating-badge rating-B">B</span></div>
+                <div class="kpi-change positive">Up from D in 2023</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Overall Score</div>
+                <div class="kpi-value">85</div>
+                <div class="kpi-change positive">+1 from 2024</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Enrollment</div>
+                <div class="kpi-value">536</div>
+                <div class="kpi-change negative">-79 from 2024</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Econ Disadvantaged</div>
+                <div class="kpi-value">96.5%</div>
+                <div class="kpi-change neutral">vs 60.5% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">EB/EL Students</div>
+                <div class="kpi-value">23.5%</div>
+                <div class="kpi-change neutral">vs 24.3% state</div>
+            </div>
+        </div>
+
+        <div class="section-info">
+            Wheatley HS has undergone a dramatic transformation — from "Academically Unacceptable" in 2011 and an F rating in 2019 to a B (85) in 2025. The 2020–2021 gap reflects COVID-era "Not Rated" years.
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>Overall Score Trajectory (2018–2025)</h3>
+                <div class="chart-subtitle">With letter grades annotated. 2020–2021 not rated due to COVID.</div>
+                <canvas id="chart-trajectory"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>2025 Overall Score: Wheatley vs. Comparisons</h3>
+                <div class="chart-subtitle">Wheatley compared to HISD average, custom peer group, and state average</div>
+                <canvas id="chart-comparison-overall"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row single">
+            <div class="chart-container">
+                <h3>2025 Domain Scores: Wheatley vs. Benchmarks</h3>
+                <div class="chart-subtitle">Score breakdown by accountability domain with three comparison groups</div>
+                <canvas id="chart-domain-comparison"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>Rating History (2011–2025)</h3>
+                <div class="chart-subtitle">Complete accountability rating timeline</div>
+                <div id="rating-timeline" style="overflow-x:auto;"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Distinction Designations (2025)</h3>
+                <div class="chart-subtitle">Schools can earn up to 7 distinction designations</div>
+                <canvas id="chart-distinctions"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: STAAR PERFORMANCE -->
+    <!-- ============================================================ -->
+    <div id="tab-staar" class="tab-content">
+        <div class="filter-bar">
+            <label>Performance Level:</label>
+            <select id="staar-level-filter" onchange="updateStaarCharts()">
+                <option value="approaches">At Approaches Grade Level or Above</option>
+                <option value="meets">At Meets Grade Level or Above</option>
+                <option value="masters">At Masters Grade Level</option>
+            </select>
+        </div>
+
+        <div class="section-info">
+            STAAR data now spans <strong>2018–2025</strong> (7 years, with 2020 omitted due to COVID cancellation). This reveals Wheatley's long-term academic trajectory from well-below-state performance to closing the gap significantly in math and science.
+        </div>
+
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">All Subjects (Approaches+)</div>
+                <div class="kpi-value">71%</div>
+                <div class="kpi-change neutral">vs 75% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">All Subjects (Meets+)</div>
+                <div class="kpi-value">40%</div>
+                <div class="kpi-change negative">vs 50% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">All Subjects (Masters)</div>
+                <div class="kpi-value">10%</div>
+                <div class="kpi-change negative">vs 21% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Strongest Subject</div>
+                <div class="kpi-value" style="font-size:18px;">Biology</div>
+                <div class="kpi-change positive">92% Approaches</div>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>STAAR Performance by Subject (2025)</h3>
+                <div class="chart-subtitle">Wheatley vs. State vs. District at selected performance level</div>
+                <canvas id="chart-staar-subjects"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>STAAR Performance Trend (All Subjects)</h3>
+                <div class="chart-subtitle">2018–2025 trend at selected performance level (2020 omitted — COVID)</div>
+                <canvas id="chart-staar-trend"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>STAAR by Subject: Longitudinal Trend (Approaches+)</h3>
+                <div class="chart-subtitle">Campus pass rates 2018–2025 for each End of Course exam</div>
+                <canvas id="chart-staar-subject-trends"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>Closing the Gap: Campus vs. State (All Subjects)</h3>
+                <div class="chart-subtitle">The gap between Wheatley and the state average has narrowed dramatically</div>
+                <canvas id="chart-staar-gap"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row single">
+            <div class="chart-container">
+                <h3>STAAR Performance Depth by Subject (2025)</h3>
+                <div class="chart-subtitle">Stacked: Approaches, Meets, and Masters rates for each subject</div>
+                <canvas id="chart-staar-depth"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: SCHOOL PROGRESS & GROWTH -->
+    <!-- ============================================================ -->
+    <div id="tab-progress" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">School Progress Score</div>
+                <div class="kpi-value">87</div>
+                <div class="kpi-change positive">Rating: B</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Academic Growth Score</div>
+                <div class="kpi-value">80</div>
+                <div class="kpi-change positive">Rating: B</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Relative Performance</div>
+                <div class="kpi-value">87</div>
+                <div class="kpi-change positive">Rating: B</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Growth (All Subjects)</div>
+                <div class="kpi-value">71%</div>
+                <div class="kpi-change positive">vs 65% state</div>
+            </div>
+        </div>
+
+        <div class="section-info">
+            School Progress measures two things: <strong>Academic Growth</strong> (did students improve year-over-year?) and <strong>Relative Performance</strong> (how does the school perform compared to schools with similar demographics?). Wheatley scores well in both.
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>School Progress Domain Scores Over Time</h3>
+                <div class="chart-subtitle">Academic Growth and Relative Performance scores (2018–2025)</div>
+                <canvas id="chart-progress-trend"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>2025 Progress Scores vs. Benchmarks</h3>
+                <div class="chart-subtitle">Wheatley vs. HISD, peer group, and state averages</div>
+                <canvas id="chart-progress-comparison"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row single">
+            <div class="chart-container">
+                <h3>Annual Growth Rate by Subject (2024 vs. 2025)</h3>
+                <div class="chart-subtitle">Percentage of students showing expected academic growth</div>
+                <canvas id="chart-growth-subjects"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 4: CLOSING THE GAPS -->
+    <!-- ============================================================ -->
+    <div id="tab-equity" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">Closing the Gaps Score</div>
+                <div class="kpi-value">80</div>
+                <div class="kpi-change positive">Rating: B</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">vs. 2023</div>
+                <div class="kpi-value">+27 pts</div>
+                <div class="kpi-change positive">Up from F (53)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">vs. State Avg</div>
+                <div class="kpi-value">80 vs 82</div>
+                <div class="kpi-change neutral">Near state average</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Distinction</div>
+                <div class="kpi-value" style="font-size:16px;">Earned</div>
+                <div class="kpi-change positive">Top 25% Closing Gaps</div>
+            </div>
+        </div>
+
+        <div class="section-info">
+            Closing the Gaps evaluates whether <strong>all student groups</strong> are meeting performance targets. Wheatley improved from an F (53) in 2023 to a B (80) in 2025 — a 27-point gain.
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>Closing the Gaps Score Over Time</h3>
+                <div class="chart-subtitle">Wheatley's equity score trajectory (2018–2025)</div>
+                <canvas id="chart-equity-trend"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>STAAR Performance by Student Group (2025)</h3>
+                <div class="chart-subtitle">All Subjects, Approaches Grade Level or Above</div>
+                <canvas id="chart-equity-subgroups"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row single">
+            <div class="chart-container">
+                <h3>Subgroup Performance: 2024 vs. 2025</h3>
+                <div class="chart-subtitle">All Subjects, At Meets Grade Level or Above — showing year-over-year improvement</div>
+                <canvas id="chart-equity-yoy"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 5: OUTCOMES -->
+    <!-- ============================================================ -->
+    <div id="tab-outcomes" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">4-Yr Graduation Rate</div>
+                <div class="kpi-value">66.9%</div>
+                <div class="kpi-change negative">vs 90.7% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">CCMR Rate</div>
+                <div class="kpi-value">99.0%</div>
+                <div class="kpi-change positive">vs 81.8% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Chronic Absenteeism</div>
+                <div class="kpi-value">51.1%</div>
+                <div class="kpi-change negative">vs 19.0% state</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Avg SAT Score</div>
+                <div class="kpi-value">738</div>
+                <div class="kpi-change negative">vs 975 state</div>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>4-Year Graduation Rate Trend</h3>
+                <div class="chart-subtitle">Wheatley vs. State (Class of 2020–2024)</div>
+                <canvas id="chart-graduation-trend"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>CCMR Rate Trend</h3>
+                <div class="chart-subtitle">College, Career, and Military Readiness (Annual Graduates)</div>
+                <canvas id="chart-ccmr-trend"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-container tall">
+                <h3>Chronic Absenteeism</h3>
+                <div class="chart-subtitle">Students missing 10%+ of school days</div>
+                <canvas id="chart-absenteeism"></canvas>
+            </div>
+            <div class="chart-container tall">
+                <h3>CCMR Breakdown (Class of 2024)</h3>
+                <div class="chart-subtitle">How graduates qualified as college, career, or military ready</div>
+                <canvas id="chart-ccmr-breakdown"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row single">
+            <div class="chart-container">
+                <h3>Average SAT Scores</h3>
+                <div class="chart-subtitle">Wheatley vs. District vs. State (Annual Graduates)</div>
+                <canvas id="chart-sat"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 6: PEER COMPARISON TABLE -->
+    <!-- ============================================================ -->
+    <div id="tab-peers" class="tab-content">
+        <div class="filter-bar">
+            <label>Comparison Group:</label>
+            <select id="peer-group-filter" onchange="updatePeerTable()">
+                <option value="hisd">Houston ISD High Schools</option>
+                <option value="peers">Custom Statewide Peer Group (90%+ Econ Disadv, 300–800 students)</option>
+            </select>
+        </div>
+
+        <div class="table-section">
+            <h3 id="peer-table-title">Houston ISD High Schools — 2025 Accountability Scores</h3>
+            <div id="peer-table-container"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dashboard-footer">
+        Data Source: Texas Education Agency, 2024–25 Texas Academic Performance Reports (TAPR) and 2025 Accountability Ratings.<br>
+        Dashboard generated February 2026. Scores reflect official TEA ratings as of December 2025.
+    </div>
+</div>
+
+<script>
+// ============================================================
+// EMBEDDED DATA
+// ============================================================
+
+const WHEATLEY_LONGITUDINAL = {
+    2011: {rating:"Academically Unacceptable", score:null},
+    2013: {rating:"Improvement Required", score:null},
+    2014: {rating:"Improvement Required", score:null},
+    2015: {rating:"Improvement Required", score:null},
+    2016: {rating:"Improvement Required", score:null},
+    2017: {rating:"Improvement Required", score:null},
+    2018: {rating:"Not Rated (Harvey)", score:52},
+    2019: {rating:"F", score:59},
+    2020: {rating:"Not Rated (COVID)", score:null},
+    2021: {rating:"Not Rated (COVID)", score:null},
+    2022: {rating:"C", score:78},
+    2023: {rating:"D", score:65},
+    2024: {rating:"B", score:84},
+    2025: {rating:"B", score:85}
+};
+
+const WHEATLEY_YEARLY = {
+    2018: {overall:52, achievement:50, progress:62, growth:62, relative:50, gaps:30, enrollment:966, econDisadv:0.739},
+    2019: {overall:59, achievement:57, progress:68, growth:68, relative:59, gaps:50, enrollment:873, econDisadv:0.938},
+    2022: {overall:78, achievement:68, progress:79, growth:69, relative:79, gaps:74, enrollment:740, econDisadv:0.954},
+    2023: {overall:65, achievement:64, progress:70, growth:69, relative:70, gaps:53, enrollment:639, econDisadv:0.953},
+    2024: {overall:84, achievement:70, progress:85, growth:85, relative:78, gaps:82, enrollment:615, econDisadv:0.974},
+    2025: {overall:85, achievement:78, progress:87, growth:80, relative:87, gaps:80, enrollment:536, econDisadv:0.965}
+};
+
+// STAAR Data extracted from TAPR
+const STAAR_DATA = {
+    2018: {
+        approaches: {
+            english1: {campus:35, state:65, district:54},
+            english2: {campus:45, state:67, district:55},
+            algebra1: {campus:62, state:83, district:73},
+            biology: {campus:56, state:87, district:77},
+            ushistory: {campus:76, state:92, district:86},
+            allSubjects: {campus:52, state:77, district:70},
+        },
+        meets: {
+            english1: {campus:13, state:44, district:34},
+            english2: {campus:22, state:48, district:37},
+            algebra1: {campus:24, state:55, district:42},
+            biology: {campus:15, state:59, district:45},
+            ushistory: {campus:37, state:70, district:61},
+            allSubjects: {campus:21, state:48, district:42},
+        },
+        masters: {
+            english1: {campus:1, state:7, district:7},
+            english2: {campus:3, state:8, district:6},
+            algebra1: {campus:5, state:32, district:25},
+            biology: {campus:3, state:24, district:17},
+            ushistory: {campus:13, state:40, district:33},
+            allSubjects: {campus:4, state:22, district:19},
+        },
+    },
+    2019: {
+        approaches: {
+            english1: {campus:38, state:68, district:59},
+            english2: {campus:39, state:68, district:60},
+            algebra1: {campus:69, state:85, district:76},
+            biology: {campus:67, state:88, district:81},
+            ushistory: {campus:78, state:93, district:89},
+            allSubjects: {campus:55, state:78, district:72},
+        },
+        meets: {
+            english1: {campus:19, state:50, district:41},
+            english2: {campus:19, state:49, district:41},
+            algebra1: {campus:34, state:61, district:48},
+            biology: {campus:27, state:62, district:50},
+            ushistory: {campus:43, state:73, district:66},
+            allSubjects: {campus:27, state:50, district:44},
+        },
+        masters: {
+            english1: {campus:1, state:11, district:9},
+            english2: {campus:2, state:8, district:7},
+            algebra1: {campus:17, state:37, district:29},
+            biology: {campus:7, state:25, district:19},
+            ushistory: {campus:13, state:45, district:38},
+            allSubjects: {campus:7, state:24, district:21},
+        },
+    },
+    2021: {
+        approaches: {
+            english1: {campus:38, state:67, district:59},
+            english2: {campus:35, state:71, district:63},
+            algebra1: {campus:56, state:73, district:61},
+            biology: {campus:56, state:82, district:73},
+            ushistory: {campus:77, state:88, district:83},
+            allSubjects: {campus:52, state:67, district:57},
+        },
+        meets: {
+            english1: {campus:20, state:50, district:43},
+            english2: {campus:24, state:57, district:50},
+            algebra1: {campus:19, state:41, district:29},
+            biology: {campus:21, state:55, district:44},
+            ushistory: {campus:45, state:69, district:60},
+            allSubjects: {campus:25, state:41, district:33},
+        },
+        masters: {
+            english1: {campus:2, state:12, district:11},
+            english2: {campus:2, state:11, district:10},
+            algebra1: {campus:4, state:23, district:15},
+            biology: {campus:3, state:22, district:17},
+            ushistory: {campus:15, state:43, district:34},
+            allSubjects: {campus:5, state:18, district:15},
+        },
+    },
+    2022: {
+        approaches: {
+            english1: {campus:40, state:65, district:58},
+            english2: {campus:47, state:72, district:66},
+            algebra1: {campus:60, state:76, district:65},
+            biology: {campus:66, state:83, district:74},
+            ushistory: {campus:79, state:89, district:85},
+            allSubjects: {campus:57, state:74, district:69},
+        },
+        meets: {
+            english1: {campus:25, state:47, district:42},
+            english2: {campus:28, state:55, district:50},
+            algebra1: {campus:21, state:43, district:32},
+            biology: {campus:25, state:55, district:42},
+            ushistory: {campus:40, state:68, district:61},
+            allSubjects: {campus:27, state:48, district:43},
+        },
+        masters: {
+            english1: {campus:3, state:11, district:10},
+            english2: {campus:1, state:9, district:9},
+            algebra1: {campus:6, state:27, district:20},
+            biology: {campus:5, state:21, district:15},
+            ushistory: {campus:15, state:42, district:36},
+            allSubjects: {campus:5, state:23, district:21},
+        },
+    },
+    2023: {
+        approaches: {
+            english1: {campus:51, state:72, district:59},
+            english2: {campus:58, state:74, district:64},
+            algebra1: {campus:61, state:79, district:70},
+            biology: {campus:70, state:88, district:78},
+            ushistory: {campus:93, state:94, district:91},
+            allSubjects: {campus:64, state:76, district:69},
+        },
+        meets: {
+            english1: {campus:22, state:52, district:40},
+            english2: {campus:26, state:54, district:43},
+            algebra1: {campus:19, state:43, district:32},
+            biology: {campus:25, state:56, district:39},
+            ushistory: {campus:54, state:70, district:62},
+            allSubjects: {campus:27, state:49, district:41},
+        },
+        masters: {
+            english1: {campus:4, state:13, district:10},
+            english2: {campus:2, state:9, district:7},
+            algebra1: {campus:8, state:23, district:17},
+            biology: {campus:7, state:21, district:13},
+            ushistory: {campus:15, state:38, district:34},
+            allSubjects: {campus:6, state:20, district:17},
+        },
+    },
+    2024: {
+        approaches: {
+            english1: {campus:53, state:70, district:63},
+            english2: {campus:59, state:75, district:69},
+            algebra1: {campus:81, state:81, district:77},
+            biology: {campus:86, state:91, district:89},
+            ushistory: {campus:95, state:96, district:94},
+            allSubjects: {campus:71, state:75, district:72},
+        },
+        meets: {
+            english1: {campus:27, state:52, district:42},
+            english2: {campus:32, state:58, district:48},
+            algebra1: {campus:31, state:43, district:35},
+            biology: {campus:22, state:56, district:49},
+            ushistory: {campus:52, state:69, district:62},
+            allSubjects: {campus:33, state:48, district:44},
+        },
+        masters: {
+            english1: {campus:1, state:16, district:12},
+            english2: {campus:3, state:9, district:7},
+            algebra1: {campus:8, state:24, district:20},
+            biology: {campus:3, state:19, district:18},
+            ushistory: {campus:19, state:37, district:32},
+            allSubjects: {campus:6, state:20, district:18},
+        },
+    },
+    2025: {
+        approaches: {
+            english1: {campus:51, state:69, district:65},
+            english2: {campus:60, state:72, district:70},
+            algebra1: {campus:80, state:78, district:80},
+            biology: {campus:92, state:92, district:92},
+            ushistory: {campus:92, state:95, district:95},
+            allSubjects: {campus:71, state:75, district:74},
+        },
+        meets: {
+            english1: {campus:26, state:49, district:43},
+            english2: {campus:33, state:55, district:50},
+            algebra1: {campus:45, state:45, district:48},
+            biology: {campus:57, state:61, district:62},
+            ushistory: {campus:57, state:68, district:66},
+            allSubjects: {campus:40, state:50, district:49},
+        },
+        masters: {
+            english1: {campus:3, state:15, district:13},
+            english2: {campus:2, state:8, district:8},
+            algebra1: {campus:26, state:27, district:31},
+            biology: {campus:15, state:21, district:24},
+            ushistory: {campus:14, state:37, district:37},
+            allSubjects: {campus:10, state:21, district:22},
+        },
+    },
+};
+
+const SUBJECT_LABELS = {
+    english1: 'English I',
+    english2: 'English II',
+    algebra1: 'Algebra I',
+    biology: 'Biology',
+    ushistory: 'U.S. History',
+    allSubjects: 'All Subjects'
+};
+
+// Growth data from TAPR
+const GROWTH_DATA = {
+    2025: {
+        english1: {campus:60, state:63, district:65},
+        english2: {campus:69, state:65, district:66},
+        algebra1: {campus:87, state:74, district:78},
+        allELA:   {campus:65, state:67, district:70},
+        allMath:  {campus:87, state:64, district:68},
+        allBoth:  {campus:71, state:65, district:69}
+    },
+    2024: {
+        english1: {campus:70, state:64, district:63},
+        english2: {campus:69, state:69, district:69},
+        algebra1: {campus:83, state:72, district:74},
+        allELA:   {campus:70, state:67, district:67},
+        allMath:  {campus:83, state:60, district:64},
+        allBoth:  {campus:74, state:64, district:66}
+    }
+};
+
+// Subgroup STAAR data (All Subjects, 2025)
+const SUBGROUP_APPROACHES_2025 = {
+    'African American': {campus:72, state:63},
+    'Hispanic': {campus:68, state:73},
+    'Econ Disadvantaged': {campus:71, state:69},
+    'EB/EL': {campus:64, state:66},
+    'Special Ed': {campus:53, state:54},
+    'All Students': {campus:71, state:75}
+};
+
+const SUBGROUP_MEETS_2025 = {
+    'African American': {campus:41, state:37},
+    'Hispanic': {campus:39, state:46},
+    'Econ Disadvantaged': {campus:41, state:42},
+    'EB/EL': {campus:33, state:37},
+    'Special Ed': {campus:26, state:29},
+    'All Students': {campus:40, state:50}
+};
+
+const SUBGROUP_MEETS_2024 = {
+    'African American': {campus:31, state:35},
+    'Hispanic': {campus:37, state:44},
+    'Econ Disadvantaged': {campus:32, state:40},
+    'EB/EL': {campus:29, state:36},
+    'Special Ed': {campus:24, state:27},
+    'All Students': {campus:33, state:48}
+};
+
+// Graduation data
+const GRADUATION_DATA = {
+    labels: ['Class of 2020','Class of 2021','Class of 2022','Class of 2023','Class of 2024'],
+    campus: [null, 79.6, 68.5, 72.3, 66.9],
+    state:  [90.3, 92.2, 91.8, 90.3, 90.7],
+    dropout_campus: [null, 19.4, 27.6, 26.6, 30.3],
+    dropout_state:  [6.1, 6.3, 6.8, 6.3, 5.8]
+};
+
+// CCMR data
+const CCMR_DATA = {
+    labels: ['2021-22','2022-23','2023-24'],
+    campus: [85.8, 80.5, 99.0],
+    state:  [72.4, 76.3, 81.8],
+    college_ready_campus: [null, 28.2, 96.0],
+    career_military_campus: [null, 75.8, 52.5]
+};
+
+// Attendance
+const ATTENDANCE_DATA = {
+    labels: ['2022-23','2023-24'],
+    chronic_campus: [38.9, 51.1],
+    chronic_state: [20.3, 19.0],
+    attendance_campus: [90.0, 88.1],
+    attendance_state: [93.3, 93.6]
+};
+
+// SAT
+const SAT_DATA = {
+    labels: ['2022-23','2023-24'],
+    campus: [799, 738],
+    district: [931, 925],
+    state: [978, 975]
+};
+
+// CCMR Breakdown
+const CCMR_BREAKDOWN = {
+    labels: ['College Ready\n(TSI Criteria)', 'Industry\nCertification', 'AP/IB\nMet Criteria', 'Dual Course\nCredits', 'Career/Military\nReady', 'Level I/II\nCertificate'],
+    campus_2024: [96.0, 49.5, 9.9, 20.8, 52.5, 4.0],
+    campus_2023: [28.2, 71.8, 0.7, 10.7, 75.8, 3.4],
+    state_2024:  [70.0, 34.9, 21.0, 25.1, 38.1, 1.1]
+};
+
+// Distinctions
+const DISTINCTIONS_2025 = {
+    'ELA/Reading': false,
+    'Mathematics': true,
+    'Science': false,
+    'Social Studies': false,
+    'Progress': true,
+    'Closing the Gaps': true,
+    'Postsecondary Readiness': true
+};
+
+// HISD Schools comparison data
+const HISD_SCHOOLS = [{"Campus Number": "101912001.0", "Campus": "AUSTIN H S", "District": "HOUSTON ISD", "Number of Students": 1179.0, "% Economically Disadvantaged": 0.955, "% EB/EL Students": 0.452, "Overall Rating": "B", "Overall Score": 81.0, "Student Achievement Rating": "C", "Student Achievement Score": 73.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "C", "Academic Growth Score": 74.0, "Relative Performance Rating": "B", "Relative Performance Score": 82.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 77.0}, {"Campus Number": "101912002.0", "Campus": "BELLAIRE H S", "District": "HOUSTON ISD", "Number of Students": 3210.0, "% Economically Disadvantaged": 0.576, "% EB/EL Students": 0.214, "Overall Rating": "A", "Overall Score": 92.0, "Student Achievement Rating": "B", "Student Achievement Score": 88.0, "School Progress Rating": "A", "School Progress Score": 92.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "A", "Relative Performance Score": 92.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 92.0}, {"Campus Number": "101912003.0", "Campus": "NORTHSIDE H S", "District": "HOUSTON ISD", "Number of Students": 1051.0, "% Economically Disadvantaged": 0.955, "% EB/EL Students": 0.343, "Overall Rating": "B", "Overall Score": 83.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "B", "Academic Growth Score": 83.0, "Relative Performance Rating": "B", "Relative Performance Score": 81.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}, {"Campus Number": "101912004.0", "Campus": "FURR H S", "District": "HOUSTON ISD", "Number of Students": 909.0, "% Economically Disadvantaged": 0.945, "% EB/EL Students": 0.399, "Overall Rating": "B", "Overall Score": 82.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "F", "Academic Growth Score": 59.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 78.0}, {"Campus Number": "101912006.0", "Campus": "JONES FUTURES ACADEMY", "District": "HOUSTON ISD", "Number of Students": 296.0, "% Economically Disadvantaged": 0.943, "% EB/EL Students": 0.416, "Overall Rating": "B", "Overall Score": 87.0, "Student Achievement Rating": "B", "Student Achievement Score": 82.0, "School Progress Rating": "B", "School Progress Score": 86.0, "Academic Growth Rating": "C", "Academic Growth Score": 70.0, "Relative Performance Rating": "B", "Relative Performance Score": 86.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 88.0}, {"Campus Number": "101912007.0", "Campus": "KASHMERE H S", "District": "HOUSTON ISD", "Number of Students": 655.0, "% Economically Disadvantaged": 0.969, "% EB/EL Students": 0.305, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 75.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "D", "Academic Growth Score": 65.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 73.0}, {"Campus Number": "101912008.0", "Campus": "LAMAR H S", "District": "HOUSTON ISD", "Number of Students": 2949.0, "% Economically Disadvantaged": 0.473, "% EB/EL Students": 0.126, "Overall Rating": "B", "Overall Score": 89.0, "Student Achievement Rating": "B", "Student Achievement Score": 87.0, "School Progress Rating": "B", "School Progress Score": 89.0, "Academic Growth Rating": "F", "Academic Growth Score": 58.0, "Relative Performance Rating": "B", "Relative Performance Score": 89.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 89.0}, {"Campus Number": "101912009.0", "Campus": "WISDOM H S", "District": "HOUSTON ISD", "Number of Students": 1964.0, "% Economically Disadvantaged": 0.961, "% EB/EL Students": 0.673, "Overall Rating": "B", "Overall Score": 81.0, "Student Achievement Rating": "C", "Student Achievement Score": 73.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "C", "Academic Growth Score": 72.0, "Relative Performance Rating": "B", "Relative Performance Score": 82.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 78.0}, {"Campus Number": "101912010.0", "Campus": "MADISON H S", "District": "HOUSTON ISD", "Number of Students": 1582.0, "% Economically Disadvantaged": 0.899, "% EB/EL Students": 0.408, "Overall Rating": "B", "Overall Score": 87.0, "Student Achievement Rating": "C", "Student Achievement Score": 77.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "C", "Academic Growth Score": 77.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 86.0}, {"Campus Number": "101912011.0", "Campus": "MILBY H S", "District": "HOUSTON ISD", "Number of Students": 2119.0, "% Economically Disadvantaged": 0.939, "% EB/EL Students": 0.406, "Overall Rating": "A", "Overall Score": 92.0, "Student Achievement Rating": "B", "Student Achievement Score": 84.0, "School Progress Rating": "A", "School Progress Score": 91.0, "Academic Growth Rating": "C", "Academic Growth Score": 79.0, "Relative Performance Rating": "A", "Relative Performance Score": 91.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 93.0}, {"Campus Number": "101912012.0", "Campus": "HEIGHTS H S", "District": "HOUSTON ISD", "Number of Students": 2415.0, "% Economically Disadvantaged": 0.605, "% EB/EL Students": 0.163, "Overall Rating": "A", "Overall Score": 90.0, "Student Achievement Rating": "B", "Student Achievement Score": 88.0, "School Progress Rating": "B", "School Progress Score": 89.0, "Academic Growth Rating": "C", "Academic Growth Score": 70.0, "Relative Performance Rating": "B", "Relative Performance Score": 89.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 92.0}, {"Campus Number": "101912014.0", "Campus": "STERLING H S", "District": "HOUSTON ISD", "Number of Students": 1142.0, "% Economically Disadvantaged": 0.937, "% EB/EL Students": 0.238, "Overall Rating": "B", "Overall Score": 84.0, "Student Achievement Rating": "C", "Student Achievement Score": 77.0, "School Progress Rating": "B", "School Progress Score": 86.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "B", "Relative Performance Score": 86.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 79.0}, {"Campus Number": "101912015.0", "Campus": "WALTRIP H S", "District": "HOUSTON ISD", "Number of Students": 1609.0, "% Economically Disadvantaged": 0.796, "% EB/EL Students": 0.295, "Overall Rating": "B", "Overall Score": 89.0, "Student Achievement Rating": "B", "Student Achievement Score": 81.0, "School Progress Rating": "A", "School Progress Score": 91.0, "Academic Growth Rating": "B", "Academic Growth Score": 80.0, "Relative Performance Rating": "A", "Relative Performance Score": 91.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 83.0}, {"Campus Number": "101912016.0", "Campus": "WASHINGTON B T H S", "District": "HOUSTON ISD", "Number of Students": 811.0, "% Economically Disadvantaged": 0.975, "% EB/EL Students": 0.322, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "C", "Academic Growth Score": 72.0, "Relative Performance Rating": "B", "Relative Performance Score": 82.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 76.0}, {"Campus Number": "101912017.0", "Campus": "WESTBURY H S", "District": "HOUSTON ISD", "Number of Students": 1986.0, "% Economically Disadvantaged": 0.913, "% EB/EL Students": 0.426, "Overall Rating": "B", "Overall Score": 85.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "C", "Academic Growth Score": 79.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 90.0}, {"Campus Number": "101912018.0", "Campus": "WHEATLEY H S", "District": "HOUSTON ISD", "Number of Students": 536.0, "% Economically Disadvantaged": 0.965, "% EB/EL Students": 0.235, "Overall Rating": "B", "Overall Score": 85.0, "Student Achievement Rating": "C", "Student Achievement Score": 78.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "B", "Academic Growth Score": 80.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 80.0}, {"Campus Number": "101912019.0", "Campus": "WORTHING H S", "District": "HOUSTON ISD", "Number of Students": 748.0, "% Economically Disadvantaged": 0.908, "% EB/EL Students": 0.151, "Overall Rating": "B", "Overall Score": 81.0, "Student Achievement Rating": "C", "Student Achievement Score": 72.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "B", "Academic Growth Score": 82.0, "Relative Performance Rating": "B", "Relative Performance Score": 80.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 79.0}, {"Campus Number": "101912020.0", "Campus": "YATES H S", "District": "HOUSTON ISD", "Number of Students": 681.0, "% Economically Disadvantaged": 0.932, "% EB/EL Students": 0.04, "Overall Rating": "B", "Overall Score": 83.0, "Student Achievement Rating": "D", "Student Achievement Score": 69.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "B", "Academic Growth Score": 83.0, "Relative Performance Rating": "C", "Relative Performance Score": 77.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}, {"Campus Number": "101912023.0", "Campus": "SHARPSTOWN H S", "District": "HOUSTON ISD", "Number of Students": 1667.0, "% Economically Disadvantaged": 0.962, "% EB/EL Students": 0.684, "Overall Rating": "C", "Overall Score": 72.0, "Student Achievement Rating": "D", "Student Achievement Score": 66.0, "School Progress Rating": "C", "School Progress Score": 73.0, "Academic Growth Rating": "D", "Academic Growth Score": 69.0, "Relative Performance Rating": "C", "Relative Performance Score": 73.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 71.0}, {"Campus Number": "101912024.0", "Campus": "SCARBOROUGH H S", "District": "HOUSTON ISD", "Number of Students": 691.0, "% Economically Disadvantaged": 0.967, "% EB/EL Students": 0.541, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 76.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "D", "Academic Growth Score": 67.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 73.0}, {"Campus Number": "101912025.0", "Campus": "KINDER H S FOR PERFORMING AND VISUAL ARTS", "District": "HOUSTON ISD", "Number of Students": 782.0, "% Economically Disadvantaged": 0.231, "% EB/EL Students": 0.015, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "B", "Academic Growth Score": 85.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912026.0", "Campus": "DEBAKEY H S FOR HEALTH PROF", "District": "HOUSTON ISD", "Number of Students": 929.0, "% Economically Disadvantaged": 0.398, "% EB/EL Students": 0.042, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "B", "Academic Growth Score": 86.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912027.0", "Campus": "CHAVEZ H S", "District": "HOUSTON ISD", "Number of Students": 1857.0, "% Economically Disadvantaged": 0.924, "% EB/EL Students": 0.454, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "C", "Academic Growth Score": 77.0, "Relative Performance Rating": "B", "Relative Performance Score": 82.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 75.0}, {"Campus Number": "101912034.0", "Campus": "H S FOR LAW AND JUSTICE", "District": "HOUSTON ISD", "Number of Students": 391.0, "% Economically Disadvantaged": 0.821, "% EB/EL Students": 0.143, "Overall Rating": "A", "Overall Score": 94.0, "Student Achievement Rating": "A", "Student Achievement Score": 95.0, "School Progress Rating": "A", "School Progress Score": 95.0, "Academic Growth Rating": "B", "Academic Growth Score": 80.0, "Relative Performance Rating": "A", "Relative Performance Score": 95.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 93.0}, {"Campus Number": "101912036.0", "Campus": "WESTSIDE H S", "District": "HOUSTON ISD", "Number of Students": 2720.0, "% Economically Disadvantaged": 0.672, "% EB/EL Students": 0.266, "Overall Rating": "B", "Overall Score": 89.0, "Student Achievement Rating": "C", "Student Achievement Score": 79.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "C", "Academic Growth Score": 74.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 92.0}, {"Campus Number": "101912097.0", "Campus": "HCC LIFE SKILLS PROGRAM", "District": "HOUSTON ISD", "Number of Students": 68.0, "% Economically Disadvantaged": 0.824, "% EB/EL Students": 0.074, "Overall Rating": "Not Rated", "Student Achievement Rating": "Not Rated", "School Progress Rating": "Not Rated", "Academic Growth Rating": "Not Rated", "Relative Performance Rating": "Not Rated", "Closing the Gaps Rating": "Not Rated"}, {"Campus Number": "101912301.0", "Campus": "EASTWOOD ACADEMY", "District": "HOUSTON ISD", "Number of Students": 365.0, "% Economically Disadvantaged": 0.715, "% EB/EL Students": 0.189, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 97.0, "School Progress Rating": "A", "School Progress Score": 97.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "A", "Relative Performance Score": 97.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 97.0}, {"Campus Number": "101912308.0", "Campus": "NORTH HOUSTON EARLY COLLEGE H S", "District": "HOUSTON ISD", "Number of Students": 489.0, "% Economically Disadvantaged": 0.879, "% EB/EL Students": 0.162, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "A", "Academic Growth Score": 91.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912310.0", "Campus": "HOUSTON MATH SCIENCE AND TECHNOLOGY CENTER", "District": "HOUSTON ISD", "Number of Students": 2357.0, "% Economically Disadvantaged": 0.952, "% EB/EL Students": 0.48, "Overall Rating": "B", "Overall Score": 82.0, "Student Achievement Rating": "C", "Student Achievement Score": 76.0, "School Progress Rating": "B", "School Progress Score": 84.0, "Academic Growth Rating": "C", "Academic Growth Score": 74.0, "Relative Performance Rating": "B", "Relative Performance Score": 84.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 77.0}, {"Campus Number": "101912311.0", "Campus": "MOUNT CARMEL ACADEMY", "District": "HOUSTON ISD", "Number of Students": 194.0, "% Economically Disadvantaged": 0.887, "% EB/EL Students": 0.433, "Overall Rating": "C", "Overall Score": 78.0, "Student Achievement Rating": "B", "Student Achievement Score": 82.0, "School Progress Rating": "B", "School Progress Score": 84.0, "Academic Growth Rating": "Not Rated", "Relative Performance Rating": "B", "Relative Performance Score": 84.0, "Closing the Gaps Rating": "D", "Closing the Gaps Score": 65.0}, {"Campus Number": "101912321.0", "Campus": "ENERGIZED FOR STEM ACADEMY H S", "District": "HOUSTON ISD", "Number of Students": 520.0, "% Economically Disadvantaged": 0.963, "% EB/EL Students": 0.767, "Overall Rating": "A", "Overall Score": 94.0, "Student Achievement Rating": "B", "Student Achievement Score": 89.0, "School Progress Rating": "A", "School Progress Score": 95.0, "Academic Growth Rating": "A", "Academic Growth Score": 91.0, "Relative Performance Rating": "A", "Relative Performance Score": 95.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 90.0}, {"Campus Number": "101912322.0", "Campus": "CARNEGIE VANGUARD H S", "District": "HOUSTON ISD", "Number of Students": 855.0, "% Economically Disadvantaged": 0.325, "% EB/EL Students": 0.021, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 99.0, "School Progress Rating": "A", "School Progress Score": 99.0, "Academic Growth Rating": "B", "Academic Growth Score": 81.0, "Relative Performance Rating": "A", "Relative Performance Score": 99.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912323.0", "Campus": "CHALLENGE EARLY COLLEGE H S", "District": "HOUSTON ISD", "Number of Students": 485.0, "% Economically Disadvantaged": 0.814, "% EB/EL Students": 0.161, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "B", "Academic Growth Score": 85.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912324.0", "Campus": "LIBERTY H S", "District": "HOUSTON ISD", "Number of Students": 343.0, "% Economically Disadvantaged": 1.0, "% EB/EL Students": 0.988, "Overall Rating": "A", "Overall Score": 90.0, "Student Achievement Rating": "B", "Student Achievement Score": 85.0, "School Progress Rating": "B", "School Progress Score": 88.0, "Academic Growth Rating": "B", "Academic Growth Score": 88.0, "Relative Performance Rating": "B", "Relative Performance Score": 85.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 94.0}, {"Campus Number": "101912345.0", "Campus": "EAST EARLY COLLEGE H S", "District": "HOUSTON ISD", "Number of Students": 458.0, "% Economically Disadvantaged": 0.782, "% EB/EL Students": 0.14, "Overall Rating": "A", "Overall Score": 98.0, "Student Achievement Rating": "A", "Student Achievement Score": 97.0, "School Progress Rating": "A", "School Progress Score": 97.0, "Academic Growth Rating": "B", "Academic Growth Score": 88.0, "Relative Performance Rating": "A", "Relative Performance Score": 97.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "101912348.0", "Campus": "HOUSTON ACADEMY FOR INTERNATIONAL STUDIES", "District": "HOUSTON ISD", "Number of Students": 473.0, "% Economically Disadvantaged": 0.592, "% EB/EL Students": 0.085, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 96.0, "School Progress Rating": "A", "School Progress Score": 96.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "A", "Relative Performance Score": 96.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "101912351.0", "Campus": "HARPER DAEP", "District": "HOUSTON ISD", "Number of Students": 76.0, "% Economically Disadvantaged": 0.908, "% EB/EL Students": 0.237, "Overall Rating": "Not Rated", "Student Achievement Rating": "Not Rated", "School Progress Rating": "Not Rated", "Academic Growth Rating": "Not Rated", "Relative Performance Rating": "Not Rated", "Closing the Gaps Rating": "Not Rated"}, {"Campus Number": "101912468.0", "Campus": "ENERGY INSTITUTE H S", "District": "HOUSTON ISD", "Number of Students": 663.0, "% Economically Disadvantaged": 0.465, "% EB/EL Students": 0.059, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 96.0, "School Progress Rating": "A", "School Progress Score": 97.0, "Academic Growth Rating": "B", "Academic Growth Score": 81.0, "Relative Performance Rating": "A", "Relative Performance Score": 97.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "101912477.0", "Campus": "NORTH FOREST H S", "District": "HOUSTON ISD", "Number of Students": 905.0, "% Economically Disadvantaged": 0.962, "% EB/EL Students": 0.317, "Overall Rating": "B", "Overall Score": 87.0, "Student Achievement Rating": "C", "Student Achievement Score": 79.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "B", "Academic Growth Score": 82.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 88.0}, {"Campus Number": "101912484.0", "Campus": "MIDDLE COLLEGE H S AT HCC GULFTON", "District": "HOUSTON ISD", "Number of Students": 70.0, "% Economically Disadvantaged": 0.914, "% EB/EL Students": 0.586, "Overall Rating": "C", "Overall Score": 77.0, "Student Achievement Rating": "C", "Student Achievement Score": 79.0, "School Progress Rating": "B", "School Progress Score": 80.0, "Academic Growth Rating": "D", "Academic Growth Score": 67.0, "Relative Performance Rating": "B", "Relative Performance Score": 80.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 70.0}, {"Campus Number": "101912485.0", "Campus": "MIDDLE COLLEGE H S AT HCC FRAGA", "District": "HOUSTON ISD", "Number of Students": 130.0, "% Economically Disadvantaged": 0.892, "% EB/EL Students": 0.338, "Overall Rating": "A", "Overall Score": 96.0, "Student Achievement Rating": "A", "Student Achievement Score": 96.0, "School Progress Rating": "B", "School Progress Score": 88.0, "Academic Growth Rating": "B", "Academic Growth Score": 88.0, "Relative Performance Rating": "B", "Relative Performance Score": 85.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 96.0}, {"Campus Number": "101912486.0", "Campus": "SOUTH EARLY COLLEGE H S", "District": "HOUSTON ISD", "Number of Students": 452.0, "% Economically Disadvantaged": 0.81, "% EB/EL Students": 0.164, "Overall Rating": "A", "Overall Score": 95.0, "Student Achievement Rating": "A", "Student Achievement Score": 94.0, "School Progress Rating": "A", "School Progress Score": 93.0, "Academic Growth Rating": "C", "Academic Growth Score": 72.0, "Relative Performance Rating": "A", "Relative Performance Score": 93.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 97.0}];
+
+// Custom Peer Group
+const PEER_SCHOOLS = [{"Campus Number": "15907006.0", "Campus": "HOUSTON H S", "District": "SAN ANTONIO ISD", "Number of Students": 800.0, "% Economically Disadvantaged": 0.951, "% EB/EL Students": 0.185, "Overall Rating": "C", "Overall Score": 74.0, "Student Achievement Rating": "C", "Student Achievement Score": 71.0, "School Progress Rating": "C", "School Progress Score": 77.0, "Academic Growth Rating": "F", "Academic Growth Score": 57.0, "Relative Performance Rating": "C", "Relative Performance Score": 77.0, "Closing the Gaps Rating": "D", "Closing the Gaps Score": 67.0}, {"Campus Number": "31901008.0", "Campus": "BROWNSVILLE EARLY COLLEGE H S", "District": "BROWNSVILLE ISD", "Number of Students": 311.0, "% Economically Disadvantaged": 0.942, "% EB/EL Students": 0.074, "Overall Rating": "A", "Overall Score": 99.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "C", "Academic Growth Score": 79.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "57829002.0", "Campus": "A+ SECONDARY SCHOOL", "District": "A+ ACADEMY", "Number of Students": 790.0, "% Economically Disadvantaged": 0.982, "% EB/EL Students": 0.511, "Overall Rating": "B", "Overall Score": 87.0, "Student Achievement Rating": "B", "Student Achievement Score": 86.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "F", "Academic Growth Score": 59.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 86.0}, {"Campus Number": "57830002.0", "Campus": "INSPIRED VISION ACADEMY SECONDARY", "District": "INSPIRED VISION ACADEMY", "Number of Students": 557.0, "% Economically Disadvantaged": 1.0, "% EB/EL Students": 0.555, "Overall Rating": "C", "Overall Score": 78.0, "Student Achievement Rating": "C", "Student Achievement Score": 79.0, "School Progress Rating": "C", "School Progress Score": 79.0, "Academic Growth Rating": "F", "Academic Growth Score": 57.0, "Relative Performance Rating": "C", "Relative Performance Score": 79.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 77.0}, {"Campus Number": "57848045.0", "Campus": "ILTEXAS LIBERTY H S", "District": "INTERNATIONAL LEADERSHIP OF TEXAS (ILTEXAS)", "Number of Students": 421.0, "% Economically Disadvantaged": 0.96, "% EB/EL Students": 0.701, "Overall Rating": "F", "Overall Score": 58.0, "Student Achievement Rating": "F", "Student Achievement Score": 57.0, "School Progress Rating": "D", "School Progress Score": 62.0, "Academic Growth Rating": "F", "Academic Growth Score": 58.0, "Relative Performance Rating": "D", "Relative Performance Score": 62.0, "Closing the Gaps Rating": "F", "Closing the Gaps Score": 50.0}, {"Campus Number": "57905003.0", "Campus": "NEW TECH H S AT B F DARRELL H S", "District": "DALLAS ISD", "Number of Students": 407.0, "% Economically Disadvantaged": 0.904, "% EB/EL Students": 0.4, "Overall Rating": "A", "Overall Score": 95.0, "Student Achievement Rating": "A", "Student Achievement Score": 92.0, "School Progress Rating": "A", "School Progress Score": 95.0, "Academic Growth Rating": "C", "Academic Growth Score": 77.0, "Relative Performance Rating": "A", "Relative Performance Score": 95.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 96.0}, {"Campus Number": "57905009.0", "Campus": "LINCOLN HUMANITIES/COMMUNICATIONS MAGNET HIGH SCH", "District": "DALLAS ISD", "Number of Students": 579.0, "% Economically Disadvantaged": 0.969, "% EB/EL Students": 0.212, "Overall Rating": "B", "Overall Score": 83.0, "Student Achievement Rating": "C", "Student Achievement Score": 76.0, "School Progress Rating": "B", "School Progress Score": 84.0, "Academic Growth Rating": "D", "Academic Growth Score": 62.0, "Relative Performance Rating": "B", "Relative Performance Score": 84.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 81.0}, {"Campus Number": "57905013.0", "Campus": "FRANKLIN D ROOSEVELT H S OF INNOVATION", "District": "DALLAS ISD", "Number of Students": 720.0, "% Economically Disadvantaged": 0.976, "% EB/EL Students": 0.443, "Overall Rating": "B", "Overall Score": 81.0, "Student Achievement Rating": "C", "Student Achievement Score": 74.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "C", "Academic Growth Score": 72.0, "Relative Performance Rating": "B", "Relative Performance Score": 82.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 78.0}, {"Campus Number": "57905032.0", "Campus": "JAMES MADISON H S", "District": "DALLAS ISD", "Number of Students": 349.0, "% Economically Disadvantaged": 0.971, "% EB/EL Students": 0.324, "Overall Rating": "B", "Overall Score": 82.0, "Student Achievement Rating": "C", "Student Achievement Score": 75.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 78.0}, {"Campus Number": "57905088.0", "Campus": "TRINIDAD GARZA EARLY COLLEGE AT MT VIEW", "District": "DALLAS ISD", "Number of Students": 474.0, "% Economically Disadvantaged": 0.947, "% EB/EL Students": 0.293, "Overall Rating": "A", "Overall Score": 98.0, "Student Achievement Rating": "A", "Student Achievement Score": 98.0, "School Progress Rating": "A", "School Progress Score": 98.0, "Academic Growth Rating": "B", "Academic Growth Score": 80.0, "Relative Performance Rating": "A", "Relative Performance Score": 98.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "73903001.0", "Campus": "MARLIN HIGH", "District": "MARLIN ISD", "Number of Students": 347.0, "% Economically Disadvantaged": 0.986, "% EB/EL Students": 0.219, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "B", "Student Achievement Score": 82.0, "School Progress Rating": "B", "School Progress Score": 80.0, "Academic Growth Rating": "F", "Academic Growth Score": 55.0, "Relative Performance Rating": "B", "Relative Performance Score": 80.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 74.0}, {"Campus Number": "101806001.0", "Campus": "EARLY COLLEGE T-STEM ACADEMY", "District": "RAUL YZAGUIRRE SCHOOLS FOR SUCCESS", "Number of Students": 303.0, "% Economically Disadvantaged": 0.97, "% EB/EL Students": 0.69, "Overall Rating": "A", "Overall Score": 90.0, "Student Achievement Rating": "A", "Student Achievement Score": 90.0, "School Progress Rating": "A", "School Progress Score": 92.0, "Academic Growth Rating": "B", "Academic Growth Score": 84.0, "Relative Performance Rating": "A", "Relative Performance Score": 92.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 86.0}, {"Campus Number": "101912007.0", "Campus": "KASHMERE H S", "District": "HOUSTON ISD", "Number of Students": 655.0, "% Economically Disadvantaged": 0.969, "% EB/EL Students": 0.305, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 75.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "D", "Academic Growth Score": 65.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 73.0}, {"Campus Number": "101912018.0", "Campus": "WHEATLEY H S", "District": "HOUSTON ISD", "Number of Students": 536.0, "% Economically Disadvantaged": 0.965, "% EB/EL Students": 0.235, "Overall Rating": "B", "Overall Score": 85.0, "Student Achievement Rating": "C", "Student Achievement Score": 78.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "B", "Academic Growth Score": 80.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 80.0}, {"Campus Number": "101912019.0", "Campus": "WORTHING H S", "District": "HOUSTON ISD", "Number of Students": 748.0, "% Economically Disadvantaged": 0.908, "% EB/EL Students": 0.151, "Overall Rating": "B", "Overall Score": 81.0, "Student Achievement Rating": "C", "Student Achievement Score": 72.0, "School Progress Rating": "B", "School Progress Score": 82.0, "Academic Growth Rating": "B", "Academic Growth Score": 82.0, "Relative Performance Rating": "B", "Relative Performance Score": 80.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 79.0}, {"Campus Number": "101912020.0", "Campus": "YATES H S", "District": "HOUSTON ISD", "Number of Students": 681.0, "% Economically Disadvantaged": 0.932, "% EB/EL Students": 0.04, "Overall Rating": "B", "Overall Score": 83.0, "Student Achievement Rating": "D", "Student Achievement Score": 69.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "B", "Academic Growth Score": 83.0, "Relative Performance Rating": "C", "Relative Performance Score": 77.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}, {"Campus Number": "101912024.0", "Campus": "SCARBOROUGH H S", "District": "HOUSTON ISD", "Number of Students": 691.0, "% Economically Disadvantaged": 0.967, "% EB/EL Students": 0.541, "Overall Rating": "B", "Overall Score": 80.0, "Student Achievement Rating": "C", "Student Achievement Score": 76.0, "School Progress Rating": "B", "School Progress Score": 83.0, "Academic Growth Rating": "D", "Academic Growth Score": 67.0, "Relative Performance Rating": "B", "Relative Performance Score": 83.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 73.0}, {"Campus Number": "101912321.0", "Campus": "ENERGIZED FOR STEM ACADEMY H S", "District": "HOUSTON ISD", "Number of Students": 520.0, "% Economically Disadvantaged": 0.963, "% EB/EL Students": 0.767, "Overall Rating": "A", "Overall Score": 94.0, "Student Achievement Rating": "B", "Student Achievement Score": 89.0, "School Progress Rating": "A", "School Progress Score": 95.0, "Academic Growth Rating": "A", "Academic Growth Score": 91.0, "Relative Performance Rating": "A", "Relative Performance Score": 95.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 90.0}, {"Campus Number": "108908004.0", "Campus": "MISSION COLLEGIATE H S", "District": "MISSION CISD", "Number of Students": 399.0, "% Economically Disadvantaged": 0.917, "% EB/EL Students": 0.238, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 97.0, "School Progress Rating": "A", "School Progress Score": 97.0, "Academic Growth Rating": "B", "Academic Growth Score": 84.0, "Relative Performance Rating": "A", "Relative Performance Score": 97.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "108909009.0", "Campus": "PSJA THOMAS JEFFERSON T-STEM EARLY COLLEGE H S", "District": "PHARR-SAN JUAN-ALAMO ISD", "Number of Students": 553.0, "% Economically Disadvantaged": 0.955, "% EB/EL Students": 0.291, "Overall Rating": "A", "Overall Score": 96.0, "Student Achievement Rating": "A", "Student Achievement Score": 95.0, "School Progress Rating": "A", "School Progress Score": 95.0, "Academic Growth Rating": "B", "Academic Growth Score": 81.0, "Relative Performance Rating": "A", "Relative Performance Score": 95.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 99.0}, {"Campus Number": "108909016.0", "Campus": "PSJA COLLEGIATE SCHOOL OF HEALTH PROFESSIONS", "District": "PHARR-SAN JUAN-ALAMO ISD", "Number of Students": 340.0, "% Economically Disadvantaged": 0.988, "% EB/EL Students": 0.171, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 96.0, "School Progress Rating": "A", "School Progress Score": 96.0, "Academic Growth Rating": "B", "Academic Growth Score": 86.0, "Relative Performance Rating": "A", "Relative Performance Score": 96.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 100.0}, {"Campus Number": "108910001.0", "Campus": "PROGRESO H S", "District": "PROGRESO ISD", "Number of Students": 431.0, "% Economically Disadvantaged": 1.0, "% EB/EL Students": 0.531, "Overall Rating": "D", "Overall Score": 67.0, "Student Achievement Rating": "D", "Student Achievement Score": 64.0, "School Progress Rating": "D", "School Progress Score": 69.0, "Academic Growth Rating": "D", "Academic Growth Score": 60.0, "Relative Performance Rating": "D", "Relative Performance Score": 69.0, "Closing the Gaps Rating": "D", "Closing the Gaps Score": 61.0}, {"Campus Number": "108912010.0", "Campus": "THELMA ROSA SALINAS STEM EARLY COLLEGE H S", "District": "LA JOYA ISD", "Number of Students": 471.0, "% Economically Disadvantaged": 0.938, "% EB/EL Students": 0.214, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 97.0, "School Progress Rating": "A", "School Progress Score": 97.0, "Academic Growth Rating": "D", "Academic Growth Score": 60.0, "Relative Performance Rating": "A", "Relative Performance Score": 97.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "123807002.0", "Campus": "BOB HOPE H S", "District": "BOB HOPE SCHOOL", "Number of Students": 555.0, "% Economically Disadvantaged": 0.921, "% EB/EL Students": 0.305, "Overall Rating": "A", "Overall Score": 94.0, "Student Achievement Rating": "A", "Student Achievement Score": 91.0, "School Progress Rating": "A", "School Progress Score": 94.0, "Academic Growth Rating": "B", "Academic Growth Score": 81.0, "Relative Performance Rating": "A", "Relative Performance Score": 94.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 93.0}, {"Campus Number": "152901021.0", "Campus": "ESTACADO H S", "District": "LUBBOCK ISD", "Number of Students": 783.0, "% Economically Disadvantaged": 0.902, "% EB/EL Students": 0.054, "Overall Rating": "C", "Overall Score": 74.0, "Student Achievement Rating": "C", "Student Achievement Score": 71.0, "School Progress Rating": "C", "School Progress Score": 78.0, "Academic Growth Rating": "F", "Academic Growth Score": 55.0, "Relative Performance Rating": "C", "Relative Performance Score": 78.0, "Closing the Gaps Rating": "D", "Closing the Gaps Score": 65.0}, {"Campus Number": "178915001.0", "Campus": "WEST OSO H S", "District": "WEST OSO ISD", "Number of Students": 490.0, "% Economically Disadvantaged": 0.949, "% EB/EL Students": 0.114, "Overall Rating": "B", "Overall Score": 86.0, "Student Achievement Rating": "B", "Student Achievement Score": 81.0, "School Progress Rating": "B", "School Progress Score": 86.0, "Academic Growth Rating": "C", "Academic Growth Score": 74.0, "Relative Performance Rating": "B", "Relative Performance Score": 86.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 87.0}, {"Campus Number": "189902001.0", "Campus": "PRESIDIO H S", "District": "PRESIDIO ISD", "Number of Students": 418.0, "% Economically Disadvantaged": 0.94, "% EB/EL Students": 0.624, "Overall Rating": "D", "Overall Score": 65.0, "Student Achievement Rating": "C", "Student Achievement Score": 71.0, "School Progress Rating": "C", "School Progress Score": 76.0, "Academic Growth Rating": "F", "Academic Growth Score": 57.0, "Relative Performance Rating": "C", "Relative Performance Score": 76.0, "Closing the Gaps Rating": "F", "Closing the Gaps Score": 39.0}, {"Campus Number": "198905002.0", "Campus": "HEARNE JH/HS", "District": "HEARNE ISD", "Number of Students": 340.0, "% Economically Disadvantaged": 0.9, "% EB/EL Students": 0.229, "Overall Rating": "D", "Overall Score": 68.0, "Student Achievement Rating": "D", "Student Achievement Score": 67.0, "School Progress Rating": "D", "School Progress Score": 69.0, "Academic Growth Rating": "F", "Academic Growth Score": 56.0, "Relative Performance Rating": "D", "Relative Performance Score": 69.0, "Closing the Gaps Rating": "D", "Closing the Gaps Score": 64.0}, {"Campus Number": "214901003.0", "Campus": "GRULLA H S", "District": "RIO GRANDE CITY GRULLA ISD", "Number of Students": 714.0, "% Economically Disadvantaged": 0.968, "% EB/EL Students": 0.784, "Overall Rating": "B", "Overall Score": 86.0, "Student Achievement Rating": "B", "Student Achievement Score": 86.0, "School Progress Rating": "B", "School Progress Score": 85.0, "Academic Growth Rating": "D", "Academic Growth Score": 64.0, "Relative Performance Rating": "B", "Relative Performance Score": 85.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 85.0}, {"Campus Number": "214901005.0", "Campus": "PREPARATORY FOR EARLY COLLEGE H S", "District": "RIO GRANDE CITY GRULLA ISD", "Number of Students": 430.0, "% Economically Disadvantaged": 0.986, "% EB/EL Students": 0.423, "Overall Rating": "A", "Overall Score": 97.0, "Student Achievement Rating": "A", "Student Achievement Score": 96.0, "School Progress Rating": "A", "School Progress Score": 96.0, "Academic Growth Rating": "C", "Academic Growth Score": 75.0, "Relative Performance Rating": "A", "Relative Performance Score": 96.0, "Closing the Gaps Rating": "A", "Closing the Gaps Score": 98.0}, {"Campus Number": "227820014.0", "Campus": "KIPP GENERATIONS COLLEGIATE", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 614.0, "% Economically Disadvantaged": 0.961, "% EB/EL Students": 0.427, "Overall Rating": "B", "Overall Score": 85.0, "Student Achievement Rating": "B", "Student Achievement Score": 86.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "D", "Academic Growth Score": 60.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 81.0}, {"Campus Number": "227820015.0", "Campus": "KIPP NORTHEAST COLLEGE PREPARATORY", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 614.0, "% Economically Disadvantaged": 0.941, "% EB/EL Students": 0.376, "Overall Rating": "B", "Overall Score": 86.0, "Student Achievement Rating": "B", "Student Achievement Score": 84.0, "School Progress Rating": "B", "School Progress Score": 87.0, "Academic Growth Rating": "F", "Academic Growth Score": 57.0, "Relative Performance Rating": "B", "Relative Performance Score": 87.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 85.0}, {"Campus Number": "227820016.0", "Campus": "KIPP SUNNYSIDE H S", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 622.0, "% Economically Disadvantaged": 0.915, "% EB/EL Students": 0.178, "Overall Rating": "B", "Overall Score": 83.0, "Student Achievement Rating": "B", "Student Achievement Score": 84.0, "School Progress Rating": "B", "School Progress Score": 86.0, "Academic Growth Rating": "D", "Academic Growth Score": 65.0, "Relative Performance Rating": "B", "Relative Performance Score": 86.0, "Closing the Gaps Rating": "C", "Closing the Gaps Score": 76.0}, {"Campus Number": "227820018.0", "Campus": "KIPP EAST END H S", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 624.0, "% Economically Disadvantaged": 0.909, "% EB/EL Students": 0.391, "Overall Rating": "B", "Overall Score": 86.0, "Student Achievement Rating": "B", "Student Achievement Score": 83.0, "School Progress Rating": "B", "School Progress Score": 88.0, "Academic Growth Rating": "D", "Academic Growth Score": 65.0, "Relative Performance Rating": "B", "Relative Performance Score": 88.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 80.0}, {"Campus Number": "227820020.0", "Campus": "KIPP UNIVERSITY PREP H S", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 630.0, "% Economically Disadvantaged": 0.944, "% EB/EL Students": 0.351, "Overall Rating": "B", "Overall Score": 84.0, "Student Achievement Rating": "B", "Student Achievement Score": 80.0, "School Progress Rating": "B", "School Progress Score": 85.0, "Academic Growth Rating": "D", "Academic Growth Score": 60.0, "Relative Performance Rating": "B", "Relative Performance Score": 85.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}, {"Campus Number": "227820030.0", "Campus": "KIPP OAK CLIFF ACADEMY", "District": "KIPP TEXAS PUBLIC SCHOOLS", "Number of Students": 340.0, "% Economically Disadvantaged": 0.932, "% EB/EL Students": 0.35, "Overall Rating": "B", "Overall Score": 85.0, "Student Achievement Rating": "C", "Student Achievement Score": 78.0, "School Progress Rating": "B", "School Progress Score": 86.0, "Academic Growth Rating": "C", "Academic Growth Score": 70.0, "Relative Performance Rating": "B", "Relative Performance Score": 86.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}, {"Campus Number": "227825004.0", "Campus": "AUSTIN ACHIEVE H S", "District": "AUSTIN ACHIEVE PUBLIC SCHOOLS", "Number of Students": 581.0, "% Economically Disadvantaged": 0.902, "% EB/EL Students": 0.69, "Overall Rating": "B", "Overall Score": 84.0, "Student Achievement Rating": "C", "Student Achievement Score": 78.0, "School Progress Rating": "B", "School Progress Score": 85.0, "Academic Growth Rating": "D", "Academic Growth Score": 67.0, "Relative Performance Rating": "B", "Relative Performance Score": 85.0, "Closing the Gaps Rating": "B", "Closing the Gaps Score": 82.0}];
+
+const BENCHMARKS = {
+    state: {"Overall Score": 84.8, "Student Achievement Score": 83.9, "School Progress Score": 84.0, "Academic Growth Score": 69.7, "Relative Performance Score": 83.7, "Closing the Gaps Score": 82.2},
+    hisd: {"Overall Score": 88.2, "Student Achievement Score": 83.7, "School Progress Score": 88.4, "Academic Growth Score": 77.2, "Relative Performance Score": 88.0, "Closing the Gaps Score": 86.8},
+    peers: {"Overall Score": 84.5, "Student Achievement Score": 81.7, "School Progress Score": 85.7, "Academic Growth Score": 69.2, "Relative Performance Score": 85.5, "Closing the Gaps Score": 81.2}
+};
+
+
+// ============================================================
+// CHART COLORS
+// ============================================================
+const COLORS = {
+    wheatley: '#C8A951',
+    wheatleyBg: 'rgba(200,169,81,0.15)',
+    state: '#4C72B0',
+    stateBg: 'rgba(76,114,176,0.15)',
+    hisd: '#55A868',
+    hisdBg: 'rgba(85,168,104,0.15)',
+    peer: '#DD8452',
+    peerBg: 'rgba(221,132,82,0.15)',
+    positive: '#28a745',
+    negative: '#dc3545',
+    gradeColors: {A:'#28a745', B:'#17a2b8', C:'#ffc107', D:'#fd7e14', F:'#dc3545'}
+};
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.target.classList.add('active');
+    // Trigger chart resize
+    Object.values(charts).forEach(c => { if(c && c.resize) c.resize(); });
+}
+
+// ============================================================
+// CHART INSTANCES
+// ============================================================
+const charts = {};
+
+// ============================================================
+// INIT: TAB 1 — THE BIG PICTURE
+// ============================================================
+function initOverviewTab() {
+    // Trajectory chart
+    const years = [2018,2019,2022,2023,2024,2025];
+    const scores = years.map(y => WHEATLEY_YEARLY[y]?.overall);
+    const ratings = years.map(y => {
+        const r = WHEATLEY_LONGITUDINAL[y]?.rating || '';
+        if(r.length <= 2) return r;
+        if(r.includes('Harvey')) return 'NR';
+        if(r.includes('COVID')) return 'NR';
+        return r.charAt(0);
+    });
+
+    const gradeColorMap = scores.map((s,i) => {
+        const r = ratings[i];
+        if(r === 'A') return COLORS.gradeColors.A;
+        if(r === 'B') return COLORS.gradeColors.B;
+        if(r === 'C') return COLORS.gradeColors.C;
+        if(r === 'D') return COLORS.gradeColors.D;
+        if(r === 'F') return COLORS.gradeColors.F;
+        return '#999';
+    });
+
+    charts.trajectory = new Chart(document.getElementById('chart-trajectory'), {
+        type: 'line',
+        data: {
+            labels: years.map(String),
+            datasets: [{
+                label: 'Overall Score',
+                data: scores,
+                borderColor: COLORS.wheatley,
+                backgroundColor: COLORS.wheatleyBg,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 8,
+                pointBackgroundColor: gradeColorMap,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const idx = ctx.dataIndex;
+                            return `Score: ${scores[idx]} — Rating: ${WHEATLEY_LONGITUDINAL[years[idx]]?.rating}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 30, max: 100,
+                    ticks: {callback: v => v},
+                    title: {display: true, text: 'Overall Score (0–100)'}
+                }
+            }
+        },
+        plugins: [{
+            afterDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'center';
+                chart.data.datasets[0].data.forEach((val, i) => {
+                    const meta = chart.getDatasetMeta(0);
+                    const pt = meta.data[i];
+                    if(pt && val) {
+                        ctx.fillStyle = gradeColorMap[i];
+                        ctx.fillText(ratings[i], pt.x, pt.y - 18);
+                    }
+                });
+                ctx.restore();
+            }
+        }]
+    });
+
+    // Comparison bar chart
+    const compLabels = ['Wheatley HS', 'HISD Average', 'Peer Group Avg', 'State Average'];
+    const compScores = [85, BENCHMARKS.hisd['Overall Score'], BENCHMARKS.peers['Overall Score'], BENCHMARKS.state['Overall Score']];
+    const compColors = [COLORS.wheatley, COLORS.hisd, COLORS.peer, COLORS.state];
+
+    charts.comparisonOverall = new Chart(document.getElementById('chart-comparison-overall'), {
+        type: 'bar',
+        data: {
+            labels: compLabels,
+            datasets: [{
+                data: compScores,
+                backgroundColor: compColors.map(c => c + 'CC'),
+                borderColor: compColors,
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {callbacks: {label: ctx => `Score: ${ctx.parsed.y}`}}
+            },
+            scales: {
+                y: {min: 60, max: 100, title: {display: true, text: 'Overall Score'}}
+            }
+        }
+    });
+
+    // Domain comparison grouped bar
+    const domains = ['Overall Score','Student Achievement Score','School Progress Score','Academic Growth Score','Relative Performance Score','Closing the Gaps Score'];
+    const domainLabels = ['Overall','Student\nAchievement','School\nProgress','Academic\nGrowth','Relative\nPerformance','Closing\nthe Gaps'];
+    const wheatleyScores = [85,78,87,80,87,80];
+
+    charts.domainComparison = new Chart(document.getElementById('chart-domain-comparison'), {
+        type: 'bar',
+        data: {
+            labels: domainLabels,
+            datasets: [
+                {label:'Wheatley', data: wheatleyScores, backgroundColor: COLORS.wheatley+'CC', borderColor: COLORS.wheatley, borderWidth:1, borderRadius:4},
+                {label:'HISD Avg', data: domains.map(d => BENCHMARKS.hisd[d]), backgroundColor: COLORS.hisd+'99', borderColor: COLORS.hisd, borderWidth:1, borderRadius:4},
+                {label:'Peer Group', data: domains.map(d => BENCHMARKS.peers[d]), backgroundColor: COLORS.peer+'99', borderColor: COLORS.peer, borderWidth:1, borderRadius:4},
+                {label:'State Avg', data: domains.map(d => BENCHMARKS.state[d]), backgroundColor: COLORS.state+'99', borderColor: COLORS.state, borderWidth:1, borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {position:'top', labels:{usePointStyle:true, padding:15}},
+                tooltip: {callbacks: {label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}`}}
+            },
+            scales: {
+                y: {min: 40, max: 100, title: {display:true, text:'Score'}}
+            }
+        }
+    });
+
+    // Rating timeline
+    const timelineHtml = buildRatingTimeline();
+    document.getElementById('rating-timeline').innerHTML = timelineHtml;
+
+    // Distinctions
+    const distLabels = Object.keys(DISTINCTIONS_2025);
+    const distValues = Object.values(DISTINCTIONS_2025).map(v => v ? 1 : 0);
+    const distColors = distValues.map(v => v ? '#28a745CC' : '#dee2e6');
+
+    charts.distinctions = new Chart(document.getElementById('chart-distinctions'), {
+        type: 'bar',
+        data: {
+            labels: distLabels,
+            datasets: [{
+                data: distValues,
+                backgroundColor: distColors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {callbacks: {label: ctx => ctx.parsed.x === 1 ? 'Earned' : 'Not Earned'}}
+            },
+            scales: {
+                x: {display: false, max: 1.2},
+                y: {grid: {display: false}}
+            }
+        },
+        plugins: [{
+            afterDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textBaseline = 'middle';
+                chart.getDatasetMeta(0).data.forEach((bar, i) => {
+                    const earned = distValues[i] === 1;
+                    ctx.fillStyle = earned ? '#28a745' : '#999';
+                    ctx.fillText(earned ? 'EARNED' : 'Not Earned', bar.x + 8, bar.y);
+                });
+                ctx.restore();
+            }
+        }]
+    });
+}
+
+function buildRatingTimeline() {
+    const years = [2011,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+    let html = '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;">';
+    years.forEach(y => {
+        const r = WHEATLEY_LONGITUDINAL[y];
+        if(!r) return;
+        let color = '#999'; let label = 'NR';
+        const rating = r.rating;
+        if(rating.includes('Unacceptable')) { color = COLORS.gradeColors.F; label = 'AU'; }
+        else if(rating.includes('Improvement')) { color = COLORS.gradeColors.D; label = 'IR'; }
+        else if(rating === 'F') { color = COLORS.gradeColors.F; label = 'F'; }
+        else if(rating === 'D') { color = COLORS.gradeColors.D; label = 'D'; }
+        else if(rating === 'C') { color = COLORS.gradeColors.C; label = 'C'; }
+        else if(rating === 'B') { color = COLORS.gradeColors.B; label = 'B'; }
+        else if(rating === 'A') { color = COLORS.gradeColors.A; label = 'A'; }
+        else { color = '#ccc'; label = 'NR'; }
+
+        const score = r.score ? r.score : '';
+        const height = r.score ? Math.max(30, r.score * 0.6) : 30;
+        html += `<div style="text-align:center;flex:1;min-width:55px;">
+            <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:2px;">${label}</div>
+            <div style="background:${color};height:${height}px;border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;">${score}</div>
+            <div style="font-size:10px;color:#666;margin-top:2px;">${y}</div>
+        </div>`;
+    });
+    html += '</div>';
+    html += '<div style="font-size:10px;color:#999;margin-top:8px;">AU=Academically Unacceptable &bull; IR=Improvement Required &bull; NR=Not Rated</div>';
+    return html;
+}
+
+// ============================================================
+// INIT: TAB 2 — STAAR
+// ============================================================
+function initStaarTab() {
+    updateStaarCharts();
+}
+
+function updateStaarCharts() {
+    const level = document.getElementById('staar-level-filter').value;
+    const subjects = ['english1','english2','algebra1','biology','ushistory'];
+    const subjectLabels = subjects.map(s => SUBJECT_LABELS[s]);
+
+    const d2025 = STAAR_DATA[2025][level];
+    const campusVals = subjects.map(s => d2025[s]?.campus);
+    const stateVals = subjects.map(s => d2025[s]?.state);
+    const districtVals = subjects.map(s => d2025[s]?.district);
+
+    if(charts.staarSubjects) charts.staarSubjects.destroy();
+    charts.staarSubjects = new Chart(document.getElementById('chart-staar-subjects'), {
+        type: 'bar',
+        data: {
+            labels: subjectLabels,
+            datasets: [
+                {label:'Wheatley', data:campusVals, backgroundColor:COLORS.wheatley+'CC', borderColor:COLORS.wheatley, borderWidth:1, borderRadius:4},
+                {label:'State', data:stateVals, backgroundColor:COLORS.state+'99', borderColor:COLORS.state, borderWidth:1, borderRadius:4},
+                {label:'District', data:districtVals, backgroundColor:COLORS.hisd+'99', borderColor:COLORS.hisd, borderWidth:1, borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% of Students'}}}
+        }
+    });
+
+    // Trend chart - full longitudinal data
+    const trendYears = [2018,2019,2021,2022,2023,2024,2025];
+    const trendCampus = trendYears.map(y => STAAR_DATA[y]?.[level]?.allSubjects?.campus);
+    const trendState = trendYears.map(y => STAAR_DATA[y]?.[level]?.allSubjects?.state);
+    const trendDistrict = trendYears.map(y => STAAR_DATA[y]?.[level]?.allSubjects?.district);
+
+    if(charts.staarTrend) charts.staarTrend.destroy();
+    charts.staarTrend = new Chart(document.getElementById('chart-staar-trend'), {
+        type: 'line',
+        data: {
+            labels: trendYears.map(String),
+            datasets: [
+                {label:'Wheatley',data:trendCampus,borderColor:COLORS.wheatley,backgroundColor:COLORS.wheatleyBg,borderWidth:3,fill:true,tension:0.3,pointRadius:6,pointBackgroundColor:COLORS.wheatley},
+                {label:'State',data:trendState,borderColor:COLORS.state,borderWidth:2,tension:0.3,pointRadius:4,borderDash:[5,5]},
+                {label:'District',data:trendDistrict,borderColor:COLORS.hisd,borderWidth:2,tension:0.3,pointRadius:4,borderDash:[3,3]}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% of Students'}}}
+        }
+    });
+
+    // Depth chart (stacked)
+    const d = STAAR_DATA[2025];
+    const depthSubjects = ['english1','english2','algebra1','biology','ushistory'];
+    const mastersOnly = depthSubjects.map(s => d.masters[s]?.campus || 0);
+    const meetsOnly = depthSubjects.map(s => (d.meets[s]?.campus || 0) - (d.masters[s]?.campus || 0));
+    const approachesOnly = depthSubjects.map(s => (d.approaches[s]?.campus || 0) - (d.meets[s]?.campus || 0));
+
+    // Subject-level longitudinal trends
+    const longYears = [2018,2019,2021,2022,2023,2024,2025];
+    const longSubjects = ['english1','english2','algebra1','biology','ushistory'];
+    const longColors = ['#C44E52','#DD8452','#C8A951','#55A868','#4C72B0'];
+    
+    if(charts.staarSubjectTrends) charts.staarSubjectTrends.destroy();
+    charts.staarSubjectTrends = new Chart(document.getElementById('chart-staar-subject-trends'), {
+        type: 'line',
+        data: {
+            labels: longYears.map(String),
+            datasets: longSubjects.map((s,i) => ({
+                label: SUBJECT_LABELS[s],
+                data: longYears.map(y => STAAR_DATA[y]?.approaches?.[s]?.campus ?? null),
+                borderColor: longColors[i],
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 4,
+                spanGaps: true
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:10,font:{size:11}}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% At Approaches or Above'}}}
+        }
+    });
+
+    // Gap chart
+    const gapYears = [2018,2019,2021,2022,2023,2024,2025];
+    const gapCampus = gapYears.map(y => STAAR_DATA[y]?.[level]?.allSubjects?.campus ?? null);
+    const gapState = gapYears.map(y => STAAR_DATA[y]?.[level]?.allSubjects?.state ?? null);
+    const gapDiff = gapCampus.map((c,i) => (c !== null && gapState[i] !== null) ? c - gapState[i] : null);
+
+    if(charts.staarGap) charts.staarGap.destroy();
+    charts.staarGap = new Chart(document.getElementById('chart-staar-gap'), {
+        type: 'bar',
+        data: {
+            labels: gapYears.map(String),
+            datasets: [{
+                label: 'Gap (Campus − State)',
+                data: gapDiff,
+                backgroundColor: gapDiff.map(v => v !== null && v >= 0 ? '#28a74599' : '#dc354599'),
+                borderColor: gapDiff.map(v => v !== null && v >= 0 ? '#28a745' : '#dc3545'),
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend:{display:false},
+                tooltip:{callbacks:{label:ctx=>{
+                    const v = ctx.parsed.y;
+                    return v >= 0 ? `Wheatley ahead by ${v} pts` : `Wheatley behind by ${Math.abs(v)} pts`;
+                }}}
+            },
+            scales: {
+                y:{
+                    title:{display:true,text:'Gap (percentage points)'},
+                    ticks:{callback:v=>(v>=0?'+':'')+v}
+                }
+            }
+        }
+    });
+
+        if(charts.staarDepth) charts.staarDepth.destroy();
+    charts.staarDepth = new Chart(document.getElementById('chart-staar-depth'), {
+        type: 'bar',
+        data: {
+            labels: depthSubjects.map(s => SUBJECT_LABELS[s]),
+            datasets: [
+                {label:'Approaches Only',data:approachesOnly,backgroundColor:'#ffc10799',borderRadius:0},
+                {label:'Meets Only',data:meetsOnly,backgroundColor:'#17a2b899',borderRadius:0},
+                {label:'Masters',data:mastersOnly,backgroundColor:'#28a74599',borderRadius:{topLeft:4,topRight:4}}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{
+                    callbacks:{
+                        label: function(ctx) {
+                            const i = ctx.dataIndex;
+                            if(ctx.datasetIndex === 0) return `Approaches+: ${d.approaches[depthSubjects[i]]?.campus}%`;
+                            if(ctx.datasetIndex === 1) return `Meets+: ${d.meets[depthSubjects[i]]?.campus}%`;
+                            return `Masters: ${d.masters[depthSubjects[i]]?.campus}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {stacked:true},
+                y: {stacked:true,min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% of Students'}}
+            }
+        }
+    });
+}
+
+// ============================================================
+// INIT: TAB 3 — PROGRESS & GROWTH
+// ============================================================
+function initProgressTab() {
+    const years = [2018,2019,2022,2023,2024,2025];
+    const progressScores = years.map(y => WHEATLEY_YEARLY[y]?.progress);
+    const growthScores = years.map(y => WHEATLEY_YEARLY[y]?.growth);
+    const relativeScores = years.map(y => WHEATLEY_YEARLY[y]?.relative);
+
+    charts.progressTrend = new Chart(document.getElementById('chart-progress-trend'), {
+        type: 'line',
+        data: {
+            labels: years.map(String),
+            datasets: [
+                {label:'School Progress',data:progressScores,borderColor:'#8172B3',backgroundColor:'rgba(129,114,179,0.1)',borderWidth:3,fill:true,tension:0.3,pointRadius:5},
+                {label:'Academic Growth',data:growthScores,borderColor:COLORS.wheatley,borderWidth:2,tension:0.3,pointRadius:4},
+                {label:'Relative Performance',data:relativeScores,borderColor:COLORS.hisd,borderWidth:2,tension:0.3,pointRadius:4,borderDash:[5,5]}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}}},
+            scales: {y:{min:20,max:100,title:{display:true,text:'Score'}}}
+        }
+    });
+
+    // Comparison
+    const compDomains = ['School Progress Score','Academic Growth Score','Relative Performance Score'];
+    const compLabelsShort = ['School Progress','Academic Growth','Relative Performance'];
+    const wheatleyVals = [87,80,87];
+
+    charts.progressComparison = new Chart(document.getElementById('chart-progress-comparison'), {
+        type: 'bar',
+        data: {
+            labels: compLabelsShort,
+            datasets: [
+                {label:'Wheatley',data:wheatleyVals,backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'HISD Avg',data:compDomains.map(d=>BENCHMARKS.hisd[d]),backgroundColor:COLORS.hisd+'99',borderColor:COLORS.hisd,borderWidth:1,borderRadius:4},
+                {label:'Peer Group',data:compDomains.map(d=>BENCHMARKS.peers[d]),backgroundColor:COLORS.peer+'99',borderColor:COLORS.peer,borderWidth:1,borderRadius:4},
+                {label:'State Avg',data:compDomains.map(d=>BENCHMARKS.state[d]),backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}}},
+            scales: {y:{min:40,max:100,title:{display:true,text:'Score'}}}
+        }
+    });
+
+    // Growth by subject
+    const gSubjects = ['english1','english2','algebra1'];
+    const gLabels = gSubjects.map(s => SUBJECT_LABELS[s]);
+
+    charts.growthSubjects = new Chart(document.getElementById('chart-growth-subjects'), {
+        type: 'bar',
+        data: {
+            labels: [...gLabels, 'All ELA', 'All Math', 'All Subjects'],
+            datasets: [
+                {label:'Wheatley 2025',data:[...gSubjects.map(s=>GROWTH_DATA[2025][s].campus), GROWTH_DATA[2025].allELA.campus, GROWTH_DATA[2025].allMath.campus, GROWTH_DATA[2025].allBoth.campus],backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'State 2025',data:[...gSubjects.map(s=>GROWTH_DATA[2025][s].state), GROWTH_DATA[2025].allELA.state, GROWTH_DATA[2025].allMath.state, GROWTH_DATA[2025].allBoth.state],backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% Students Showing Growth'}}}
+        }
+    });
+}
+
+// ============================================================
+// INIT: TAB 4 — EQUITY
+// ============================================================
+function initEquityTab() {
+    const years = [2018,2019,2022,2023,2024,2025];
+    const gapScores = years.map(y => WHEATLEY_YEARLY[y]?.gaps);
+
+    charts.equityTrend = new Chart(document.getElementById('chart-equity-trend'), {
+        type: 'line',
+        data: {
+            labels: years.map(String),
+            datasets: [{
+                label:'Closing the Gaps Score',
+                data: gapScores,
+                borderColor: '#C44E52',
+                backgroundColor: 'rgba(196,78,82,0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 6,
+                pointBackgroundColor: gapScores.map(s => s >= 70 ? COLORS.gradeColors.B : s >= 60 ? COLORS.gradeColors.C : s >= 50 ? COLORS.gradeColors.D : COLORS.gradeColors.F),
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{display:false}},
+            scales: {y:{min:0,max:100,title:{display:true,text:'Score'}}}
+        }
+    });
+
+    // Subgroup comparison
+    const groups = Object.keys(SUBGROUP_APPROACHES_2025);
+    charts.equitySubgroups = new Chart(document.getElementById('chart-equity-subgroups'), {
+        type: 'bar',
+        data: {
+            labels: groups,
+            datasets: [
+                {label:'Wheatley',data:groups.map(g=>SUBGROUP_APPROACHES_2025[g].campus),backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'State',data:groups.map(g=>SUBGROUP_APPROACHES_2025[g].state),backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% At Approaches or Above'}}}
+        }
+    });
+
+    // YoY improvement
+    const groups2 = Object.keys(SUBGROUP_MEETS_2025);
+    charts.equityYoy = new Chart(document.getElementById('chart-equity-yoy'), {
+        type: 'bar',
+        data: {
+            labels: groups2,
+            datasets: [
+                {label:'2024',data:groups2.map(g=>SUBGROUP_MEETS_2024[g].campus),backgroundColor:'#adb5bd',borderRadius:4},
+                {label:'2025',data:groups2.map(g=>SUBGROUP_MEETS_2025[g].campus),backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:60,ticks:{callback:v=>v+'%'},title:{display:true,text:'% At Meets or Above'}}}
+        }
+    });
+}
+
+// ============================================================
+// INIT: TAB 5 — OUTCOMES
+// ============================================================
+function initOutcomesTab() {
+    // Graduation trend
+    charts.gradTrend = new Chart(document.getElementById('chart-graduation-trend'), {
+        type: 'line',
+        data: {
+            labels: GRADUATION_DATA.labels,
+            datasets: [
+                {label:'Wheatley',data:GRADUATION_DATA.campus,borderColor:COLORS.wheatley,backgroundColor:COLORS.wheatleyBg,borderWidth:3,fill:true,tension:0.3,pointRadius:6,pointBackgroundColor:COLORS.wheatley,spanGaps:true},
+                {label:'State',data:GRADUATION_DATA.state,borderColor:COLORS.state,borderWidth:2,tension:0.3,pointRadius:4,borderDash:[5,5]}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:50,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'4-Year Graduation Rate'}}}
+        }
+    });
+
+    // CCMR trend
+    charts.ccmrTrend = new Chart(document.getElementById('chart-ccmr-trend'), {
+        type: 'line',
+        data: {
+            labels: CCMR_DATA.labels,
+            datasets: [
+                {label:'Wheatley',data:CCMR_DATA.campus,borderColor:COLORS.wheatley,backgroundColor:COLORS.wheatleyBg,borderWidth:3,fill:true,tension:0.3,pointRadius:6,pointBackgroundColor:COLORS.wheatley},
+                {label:'State',data:CCMR_DATA.state,borderColor:COLORS.state,borderWidth:2,tension:0.3,pointRadius:4,borderDash:[5,5]}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:50,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'CCMR Rate'}}}
+        }
+    });
+
+    // Absenteeism
+    charts.absenteeism = new Chart(document.getElementById('chart-absenteeism'), {
+        type: 'bar',
+        data: {
+            labels: ATTENDANCE_DATA.labels,
+            datasets: [
+                {label:'Wheatley',data:ATTENDANCE_DATA.chronic_campus,backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'State',data:ATTENDANCE_DATA.chronic_state,backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:60,ticks:{callback:v=>v+'%'},title:{display:true,text:'% Chronically Absent'}}}
+        }
+    });
+
+    // CCMR Breakdown
+    charts.ccmrBreakdown = new Chart(document.getElementById('chart-ccmr-breakdown'), {
+        type: 'bar',
+        data: {
+            labels: CCMR_BREAKDOWN.labels,
+            datasets: [
+                {label:'Wheatley 2023-24',data:CCMR_BREAKDOWN.campus_2024,backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'Wheatley 2022-23',data:CCMR_BREAKDOWN.campus_2023,backgroundColor:'#adb5bd',borderRadius:4},
+                {label:'State 2023-24',data:CCMR_BREAKDOWN.state_2024,backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}%`}}},
+            scales: {y:{min:0,max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'% of Graduates'}}}
+        }
+    });
+
+    // SAT
+    charts.sat = new Chart(document.getElementById('chart-sat'), {
+        type: 'bar',
+        data: {
+            labels: SAT_DATA.labels,
+            datasets: [
+                {label:'Wheatley',data:SAT_DATA.campus,backgroundColor:COLORS.wheatley+'CC',borderColor:COLORS.wheatley,borderWidth:1,borderRadius:4},
+                {label:'District',data:SAT_DATA.district,backgroundColor:COLORS.hisd+'99',borderColor:COLORS.hisd,borderWidth:1,borderRadius:4},
+                {label:'State',data:SAT_DATA.state,backgroundColor:COLORS.state+'99',borderColor:COLORS.state,borderWidth:1,borderRadius:4}
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend:{position:'top',labels:{usePointStyle:true,padding:12}}},
+            scales: {y:{min:600,max:1100,title:{display:true,text:'Average Total SAT Score'}}}
+        }
+    });
+}
+
+// ============================================================
+// INIT: TAB 6 — PEER TABLE
+// ============================================================
+let peerSortCol = 'Overall Score';
+let peerSortDir = 'desc';
+
+function updatePeerTable() {
+    const group = document.getElementById('peer-group-filter').value;
+    const schools = group === 'hisd' ? HISD_SCHOOLS : PEER_SCHOOLS;
+    const title = group === 'hisd'
+        ? 'Houston ISD High Schools — 2025 Accountability Scores'
+        : 'Custom Statewide Peer Group (90%+ Econ Disadv, 300–800 students) — 2025 Scores';
+    document.getElementById('peer-table-title').textContent = title;
+    renderPeerTable(schools);
+}
+
+function renderPeerTable(schools) {
+    const cols = [
+        {field:'Campus', label:'School', format:'text'},
+        {field:'District', label:'District', format:'text'},
+        {field:'Number of Students', label:'Students', format:'number'},
+        {field:'% Economically Disadvantaged', label:'% Econ Disadv', format:'percent'},
+        {field:'Overall Rating', label:'Rating', format:'rating'},
+        {field:'Overall Score', label:'Overall', format:'score'},
+        {field:'Student Achievement Score', label:'Achievement', format:'score'},
+        {field:'School Progress Score', label:'Progress', format:'score'},
+        {field:'Closing the Gaps Score', label:'Closing Gaps', format:'score'}
+    ];
+
+    const sorted = [...schools].sort((a,b) => {
+        const av = a[peerSortCol] ?? -999;
+        const bv = b[peerSortCol] ?? -999;
+        return peerSortDir === 'asc' ? (av < bv ? -1 : 1) : (av > bv ? -1 : 1);
+    });
+
+    let html = '<table class="data-table"><thead><tr>';
+    cols.forEach(col => {
+        const arrow = peerSortCol === col.field ? (peerSortDir === 'asc' ? ' ▲' : ' ▼') : '';
+        html += `<th onclick="sortPeerTable('${col.field}')">${col.label}${arrow}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    sorted.forEach(school => {
+        const isWheatley = (school['Campus'] || '').includes('WHEATLEY');
+        html += `<tr class="${isWheatley ? 'highlight' : ''}">`;
+        cols.forEach(col => {
+            let val = school[col.field];
+            if(col.format === 'percent' && typeof val === 'number') {
+                val = (val * 100).toFixed(1) + '%';
+            } else if(col.format === 'score' && typeof val === 'number') {
+                val = Math.round(val);
+            } else if(col.format === 'number' && typeof val === 'number') {
+                val = Math.round(val).toLocaleString();
+            } else if(col.format === 'rating') {
+                const colors = {A:'#28a745',B:'#17a2b8',C:'#ffc107',D:'#fd7e14',F:'#dc3545'};
+                const c = colors[val] || '#999';
+                val = `<span class="mini-badge" style="background:${c};${val==='C'?'color:#333;':''}">${val || 'NR'}</span>`;
+            }
+            html += `<td>${val ?? '—'}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('peer-table-container').innerHTML = html;
+}
+
+function sortPeerTable(field) {
+    if(peerSortCol === field) {
+        peerSortDir = peerSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        peerSortCol = field;
+        peerSortDir = 'desc';
+    }
+    updatePeerTable();
+}
+
+// ============================================================
+// INITIALIZE ALL
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    initOverviewTab();
+    initStaarTab();
+    initProgressTab();
+    initEquityTab();
+    initOutcomesTab();
+    updatePeerTable();
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NASHP Hospital Cost &amp; Transparency Data | Texas 2036</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="congress_data.js"></script>
+<script src="state_leg_data.js"></script>
+<style>
+:root{--tx-blue:#3A4A9F;--tx-orange:#F26852;--tx-dk:#002D74;--tx-mid:#2A7DE1;--tx-teal:#00A9C5;--tx-yel:#FFD100;--gd:#6B6D6F;--gm:#8C8F93;--gl:#DBDCDD;--bg:#f4f5f7;--card:#fff;--text:#1a1a2e;--ts:#6B6D6F;--rad:10px;--sh:0 2px 8px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text)}
+.hdr{background:linear-gradient(135deg,var(--tx-dk),var(--tx-blue));color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hdr h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.hdr .sub{font-size:12px;opacity:.8;margin-top:2px}
+.bm{font-size:26px;font-weight:800;letter-spacing:1px;line-height:1.1}.bm .n{color:var(--tx-orange)}
+.ctr{max-width:1600px;margin:0 auto;padding:14px}
+.fb{background:var(--card);border-radius:var(--rad);padding:14px 18px;box-shadow:var(--sh);margin-bottom:14px}
+.fb h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tx-blue);margin-bottom:10px}
+.fr{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--ts)}
+.fg select,.fg input[type=number]{padding:5px 8px;border:1.5px solid var(--gl);border-radius:5px;font-family:inherit;font-size:11px;background:#fff;color:var(--text);min-width:100px}
+.fg select:focus,.fg input:focus{border-color:var(--tx-mid);outline:none}
+.ms{position:relative;min-width:160px}
+.msb{padding:5px 8px;border:1.5px solid var(--gl);border-radius:5px;font-family:inherit;font-size:11px;background:#fff;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msb:after{content:'▾';font-size:9px;color:var(--gm);flex-shrink:0}
+.msd{display:none;position:absolute;top:100%;left:0;z-index:1000;background:#fff;border:1.5px solid var(--gl);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:260px;overflow-y:auto;min-width:200px;padding:3px 0}
+.msd.open{display:block}
+.msd .mss{width:calc(100% - 10px);margin:3px 5px;padding:4px 6px;border:1px solid var(--gl);border-radius:3px;font-size:10px;font-family:inherit}
+.msd label{display:flex;align-items:center;gap:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;position:relative}
+.msd label:hover{background:#f0f4ff}
+.msd .only-btn{display:none;margin-left:auto;font-size:8px;font-family:inherit;font-weight:600;color:var(--tx-mid);background:rgba(58,74,159,0.08);border:1px solid rgba(58,74,159,0.2);border-radius:3px;padding:0 4px;cursor:pointer;line-height:16px;flex-shrink:0}
+.msd .only-btn:hover{background:rgba(58,74,159,0.18);color:var(--tx-dk)}
+.msd label:hover .only-btn{display:inline-block}
+.msa{display:flex;gap:5px;padding:3px 8px;border-bottom:1px solid #eee;margin-bottom:2px}
+.msa button{font-size:9px;font-family:inherit;background:none;border:none;color:var(--tx-mid);cursor:pointer;font-weight:600;padding:1px 3px}
+.cb label{font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;margin-top:16px}
+.cp{background:var(--card);border-radius:var(--rad);padding:20px;box-shadow:var(--sh);margin-bottom:14px}
+.cp h3{font-size:14px;font-weight:700;color:var(--tx-dk);margin-bottom:3px}
+.cp .cs{font-size:10px;color:var(--ts);margin-bottom:14px}
+.kr{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kc{background:var(--card);border-radius:var(--rad);padding:14px 16px;box-shadow:var(--sh);border-left:4px solid var(--tx-blue)}
+.kl{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--ts);letter-spacing:.3px}
+.kv{font-size:22px;font-weight:700;color:var(--tx-dk);margin-top:1px}
+.ks{font-size:10px;color:var(--ts);margin-top:1px}
+.scw{position:relative;height:500px}
+.scw canvas{width:100%!important;height:100%!important}
+.stat-lbl{position:absolute;pointer-events:none;font-family:'Montserrat',sans-serif;white-space:nowrap;z-index:10}
+.stat-lbl.med{font-size:10px;font-weight:700;background:rgba(255,255,255,0.92);padding:1px 5px;border-radius:3px;border:1px solid rgba(0,0,0,0.12);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.stat-lbl.iqr{font-size:9px;font-weight:600;background:rgba(255,255,255,0.88);padding:0px 4px;border-radius:2px;opacity:0.85}
+.iqr-hover{position:absolute;z-index:5;cursor:default;opacity:0}
+.zc{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 14px;background:#f8f9fb;border-radius:6px;flex-wrap:wrap}
+.zc label{font-size:10px;font-weight:600;color:var(--ts);text-transform:uppercase}
+.zc input[type=range]{flex:1;max-width:180px;accent-color:var(--tx-blue)}
+.zc span{font-size:11px;font-weight:600;min-width:40px;text-align:center}
+.tt{position:fixed;pointer-events:none;z-index:10000;background:rgba(0,20,60,.95);color:#fff;padding:10px 14px;border-radius:7px;font-size:11px;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:280px;border-left:4px solid var(--tx-orange);display:none}
+.tt .tn{font-weight:700;font-size:12px;color:var(--tx-yel);margin-bottom:3px}
+.tt .tr{display:flex;justify-content:space-between;gap:10px}
+.tt .tl{color:rgba(255,255,255,.7)}
+.tt .tv{font-weight:600}
+.pw{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.pcw{width:380px;height:380px;min-width:380px;min-height:380px;position:relative}
+.badge{display:inline-block;background:var(--tx-blue);color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-left:6px}
+.ftr{text-align:center;padding:16px;font-size:10px;color:var(--ts)}
+.ftr a{color:var(--tx-mid)}
+.ldg{text-align:center;padding:40px;font-size:14px;color:var(--ts)}
+/* PDF Export */
+.pdf-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.pdf-btn{padding:9px 20px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;border:none;border-radius:var(--rad);cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--tx-dk),var(--tx-blue));box-shadow:var(--sh);transition:opacity .2s}
+.pdf-btn:hover{opacity:.85}
+.pdf-btn:disabled{opacity:.5;cursor:default}
+.pdf-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center}
+.pdf-modal-bg.open{display:flex}
+.pdf-modal{background:#fff;border-radius:12px;padding:28px 32px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.25);font-family:'Montserrat',sans-serif}
+.pdf-modal h3{font-size:16px;font-weight:700;color:var(--tx-dk);margin-bottom:8px}
+.pdf-modal p{font-size:12px;color:#444;line-height:1.6;margin-bottom:12px}
+.pdf-modal .warn{background:#FFF3CD;border:1px solid #FFECB5;border-radius:6px;padding:10px 14px;font-size:11px;color:#664D03;margin-bottom:14px}
+.pdf-modal .warn.severe{background:#F8D7DA;border-color:#F5C2C7;color:#842029}
+.pdf-modal .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.pdf-modal button{padding:8px 18px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:none}
+.pdf-modal .btn-cancel{background:var(--gl);color:var(--text)}
+.pdf-modal .btn-go{background:var(--tx-blue);color:#fff}
+.pdf-modal .btn-summary{background:var(--tx-teal);color:#fff}
+.pdf-progress{display:none;width:100%;margin-top:10px}
+.pdf-progress .bar-bg{background:var(--gl);border-radius:6px;height:18px;overflow:hidden}
+.pdf-progress .bar-fill{height:100%;background:linear-gradient(90deg,var(--tx-blue),var(--tx-teal));border-radius:6px;transition:width .15s;width:0%}
+.pdf-progress .bar-text{font-size:10px;font-weight:600;color:var(--ts);margin-top:4px;text-align:center}
+/* Data Table */
+.dt-wrap{background:var(--card);border-radius:var(--rad);padding:20px;box-shadow:var(--sh);margin-bottom:14px;overflow-x:auto}
+.dt-wrap h3{font-size:14px;font-weight:700;color:var(--tx-dk);margin-bottom:3px}
+.dt-wrap .cs{font-size:10px;color:var(--ts);margin-bottom:10px}
+.dt{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.dt thead{position:sticky;top:0;z-index:2}
+.dt th{background:var(--tx-dk);color:#fff;padding:6px 8px;text-align:left;font-weight:600;font-size:10px;cursor:pointer;user-select:none;letter-spacing:.3px}
+.dt th:hover{background:var(--tx-blue)}
+.dt th .sa{font-size:8px;margin-left:3px;opacity:.6}
+.dt th.asc .sa::after{content:'▲'}
+.dt th.desc .sa::after{content:'▼'}
+.dt th:not(.asc):not(.desc) .sa::after{content:'⇅'}
+.dt th input{display:block;width:100%;margin-top:4px;padding:2px 4px;font-size:9px;font-family:inherit;border:1px solid rgba(255,255,255,.3);border-radius:3px;background:rgba(255,255,255,.15);color:#fff;outline:none}
+.dt th input::placeholder{color:rgba(255,255,255,.5)}
+.dt th input:focus{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.dt td{padding:5px 8px;border-bottom:1px solid var(--gl)}
+.dt tbody tr:hover{background:#f0f4ff}
+.dt tbody tr:nth-child(even){background:#fafbfc}
+.dt tbody tr:nth-child(even):hover{background:#f0f4ff}
+.dt-pg{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--ts)}
+.dt-pg button{padding:4px 12px;border:1.5px solid var(--gl);border-radius:5px;background:#fff;font-family:inherit;font-size:11px;cursor:pointer;color:var(--text)}
+.dt-pg button:hover{border-color:var(--tx-mid);color:var(--tx-mid)}
+.dt-pg button:disabled{opacity:.4;cursor:default;border-color:var(--gl);color:var(--ts)}
+.dt-pg .pg-info{font-weight:600}
+.chart-row{display:flex;gap:14px;align-items:flex-start}
+.chart-row>.cp{flex:1;min-width:0}
+@media(max-width:1100px){.chart-row{flex-direction:column}.chart-row>.cp{width:100%}}
+@media(max-width:900px){.fr{flex-direction:column}.pw{flex-direction:column}.scw{height:350px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+<div class="bm">TEXAS <span class="n">20<br>36</span></div>
+<div><h1>NASHP Hospital Cost &amp; Transparency Dashboard</h1><div class="sub">Data from NASHP Hospital Cost Tool, 2020–2024</div></div>
+</div>
+<div class="ctr">
+<div class="kr" id="kpi-row">
+<div class="kc"><div class="kl">Hospitals Shown</div><div class="kv" id="k-cnt">-</div><div class="ks" id="k-cnt2"></div></div>
+<div class="kc"><div class="kl">Median Net Profit Margin</div><div class="kv" id="k-npm">-</div></div>
+<div class="kc"><div class="kl">Median Medicaid Op. Profit Margin</div><div class="kv" id="k-mcd">-</div></div>
+<div class="kc"><div class="kl">Median Commercial Breakeven</div><div class="kv" id="k-cbe">-</div></div>
+<div class="kc"><div class="kl">Median Commercial Prices (RAND 5.1)</div><div class="kv" id="k-rnd">-</div></div>
+</div>
+<div class="fb">
+<h3>Filters</h3>
+<div class="fr">
+<div class="fg"><label>Year</label><select id="f-yr" onchange="go()"><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option></select></div>
+<div class="fg"><label>State</label><div class="ms" id="ms-st"></div></div>
+<div class="fg"><label>Metro Area</label><div class="ms" id="ms-ms"></div></div>
+<div class="fg"><label>Urban/Rural</label><div class="ms" id="ms-ur"></div></div>
+<div class="fg"><label>Hospital System</label><div class="ms" id="ms-sy"></div></div>
+<div class="fg"><label>US House District</label><div class="ms" id="ms-hd"></div></div>
+<div class="fg"><label>US Senate</label><div class="ms" id="ms-sn"></div></div>
+<div class="fg"><label>State House District</label><div class="ms" id="ms-sh"></div></div>
+<div class="fg"><label>State Senate District</label><div class="ms" id="ms-ss"></div></div>
+<div class="fg"><label>Bed Min</label><input type="number" id="f-blo" value="0" min="0" max="3000" step="10" onchange="go()"></div>
+<div class="fg"><label>Bed Max</label><input type="number" id="f-bhi" value="3000" min="0" max="3000" step="10" onchange="go()"></div>
+<div class="cb"><label><input type="checkbox" id="f-ca" onchange="go()"> Include Critical Access Hospitals</label></div>
+</div>
+</div>
+<div class="pdf-bar">
+<button class="pdf-btn" onclick="pdfPrompt()">&#128196; Download PDF Report</button>
+<div class="pdf-progress" id="pdf-progress">
+<div class="bar-bg"><div class="bar-fill" id="pdf-bar-fill"></div></div>
+<div class="bar-text" id="pdf-bar-text">Generating...</div>
+</div>
+</div>
+<!-- PDF confirmation modal -->
+<div class="pdf-modal-bg" id="pdf-modal">
+<div class="pdf-modal">
+<h3 id="pdf-modal-title">Generate PDF Report</h3>
+<p id="pdf-modal-desc"></p>
+<div id="pdf-modal-warn"></div>
+<div class="btn-row">
+<button class="btn-cancel" onclick="pdfClose()">Cancel</button>
+<button class="btn-summary" id="pdf-btn-summary" onclick="pdfGo(true)">Summary Only</button>
+<button class="btn-go" id="pdf-btn-full" onclick="pdfGo(false)">Full Report</button>
+</div>
+</div>
+</div>
+<div class="cp"><h3>Payer Mix Distribution <span class="badge" id="pie-n"></span></h3>
+<div class="cs">Average payer mix across filtered hospitals. Shows share of revenue by payer category.</div>
+<div style="max-width:600px;margin:0 auto"><canvas id="pie-cv"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="cp"><h3>Operating Profit Margins by Payer <span class="badge" id="sc1-n"></span></h3>
+<div class="cs">Each dot = one hospital. Hover to see details; highlighted hospital shown in <span style="color:#8B5CF6;font-weight:700">purple</span> across all five categories.</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:10px;font-weight:600">
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8B5CF6;margin-right:3px;vertical-align:middle"></span>Highlighted Hospital</span>
+<span><span style="display:inline-block;width:16px;height:3px;background:#002D74;margin-right:3px;vertical-align:middle"></span>Median</span>
+<span><span style="display:inline-block;width:14px;height:10px;background:rgba(0,45,116,0.15);border:1px dashed rgba(0,45,116,0.4);margin-right:3px;vertical-align:middle"></span>IQR (25th–75th)</span>
+<span><span style="display:inline-block;width:16px;height:2.5px;background:#1a1a2e;margin-right:3px;vertical-align:middle"></span>0% Breakeven</span>
+</div>
+<div class="scw"><canvas id="mg-cv"></canvas><div id="mg-labels"></div></div>
+<div class="zc"><label>Y-Axis:</label><span id="z1l">-100%</span><input type="range" id="z1lo" min="-100" max="100" value="-100" step="5" oninput="zm1()"><span>to</span><input type="range" id="z1hi" min="-100" max="100" value="100" step="5" oninput="zm1()"><span id="z1h">100%</span></div>
+</div>
+<div class="cp"><h3>Commercial Breakeven vs RAND 5.1 <span class="badge" id="sc2-n"></span></h3>
+<div class="cs">Compares commercial breakeven price to RAND 5.1 price (as multiple of Medicare). Hover for details; highlighted hospital shown in <span style="color:#8B5CF6;font-weight:700">purple</span> across both categories.</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:10px;font-weight:600">
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(58,74,159,0.53);margin-right:3px;vertical-align:middle"></span>Commercial Breakeven</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(242,104,82,0.53);margin-right:3px;vertical-align:middle"></span>RAND 5.1</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#8B5CF6;margin-right:3px;vertical-align:middle"></span>Highlighted</span>
+<span style="margin-left:8px;border-left:1px solid #ccc;padding-left:10px"><span style="display:inline-block;width:16px;height:3px;background:#002D74;margin-right:3px;vertical-align:middle"></span>Median</span>
+<span><span style="display:inline-block;width:14px;height:10px;background:rgba(0,45,116,0.15);border:1px dashed rgba(0,45,116,0.4);margin-right:3px;vertical-align:middle"></span>IQR (25th–75th)</span>
+</div>
+<div class="scw"><canvas id="rd-cv"></canvas><div id="rd-labels"></div></div>
+<div class="zc"><label>Y-Axis:</label><span id="z2l">0</span><input type="range" id="z2lo" min="0" max="10" value="0" step="0.1" oninput="zm2()"><span>to</span><input type="range" id="z2hi" min="0" max="10" value="5" step="0.1" oninput="zm2()"><span id="z2h">5</span></div>
+</div>
+</div><!-- end chart-row -->
+<div class="dt-wrap">
+<h3>Hospital Detail <span class="badge" id="tbl-n"></span></h3>
+<div class="cs">Click column headers to sort. Use search fields to filter by CCN, name, city, state, or system. Address and zip code are not available in the source data.</div>
+<div style="max-height:780px;overflow:auto" id="tbl-scroll">
+<table class="dt" id="hosp-tbl">
+<thead><tr id="tbl-hdr"></tr><tr id="tbl-search"></tr></thead>
+<tbody id="tbl-body"></tbody>
+</table>
+</div>
+<div class="dt-pg">
+<button id="pg-prev" onclick="tblPg(-1)">← Previous</button>
+<span class="pg-info" id="pg-info"></span>
+<button id="pg-next" onclick="tblPg(1)">Next →</button>
+</div>
+</div>
+<div class="ldg" id="loading">Loading data...</div>
+</div>
+<div class="tt" id="tip"></div>
+<div class="ftr">Data Source: <a href="https://nashp.org" target="_blank">National Academy for State Health Policy (NASHP)</a> Hospital Cost Tool, Dec 2025. Dashboard by Texas 2036.</div>
+
+<script src="nashp_data.js"></script>
+<script>
+var OWN={N:'Non-Profit',F:'For-Profit',G:'Governmental'};
+var UR={U:'Urban',S:'Suburban',R:'Rural'};
+var FT={S:'Short Term',C:'Critical Access'};
+
+function parseData(){
+    var lines=_R.split('\n');
+    var out=[];
+    for(var i=0;i<lines.length;i++){
+        var p=lines[i].split('\t');
+        if(p.length<24)continue;
+        var pn=function(v){return v===''?null:+v;};
+        out.push({
+            i:p[0],y:+p[1],n:_S[+p[2]],c:_S[+p[3]],s:_S[+p[4]],
+            m:p[5]==='-1'||p[5]===''?null:_S[+p[5]],
+            u:UR[p[6]]||'',b:p[7]===''?null:+p[7],
+            o:OWN[p[8]]||'',sy:p[9]==='-1'||p[9]===''?null:_S[+p[9]],
+            f:FT[p[10]]||'',
+            p1:pn(p[11]),p2:pn(p[12]),p3:pn(p[13]),p4:pn(p[14]),p5:pn(p[15]),p6:pn(p[16]),
+            o1:pn(p[17]),o2:pn(p[18]),o3:pn(p[19]),o4:pn(p[20]),o5:pn(p[21]),
+            cb:pn(p[22]),r5:pn(p[23]),
+            hd:typeof CCN_CD!=='undefined'&&CCN_CD[p[0]]!=null?_S[+p[4]]+'-'+CCN_CD[p[0]]:null,
+            sh:typeof CCN_SLDL!=='undefined'&&CCN_SLDL[p[0]]!=null?_S[+p[4]]+'-'+CCN_SLDL[p[0]]:null,
+            ss:typeof CCN_SLDU!=='undefined'&&CCN_SLDU[p[0]]!=null?_S[+p[4]]+'-'+CCN_SLDU[p[0]]:null
+        });
+    }
+    return out;
+}
+
+var D,F=[];
+var pieC=null,mgC=null,rdC=null;
+var B='#3A4A9F',O='#F26852',DK='#002D74',MD='#2A7DE1',TL='#00A9C5',YL='#FFD100';
+var HL='#8B5CF6';
+var PC=[B,O,TL,DK,MD,YL];
+var MC=[DK,B,TL,MD,O];
+var ML=['Net Profit','Medicaid/SCHIP','Medicare','Medicare Adv','Commercial'];
+var MK=['o5','o1','o2','o3','o4'];
+var RL=['Commercial Breakeven','RAND 5.1'];
+var RC=[B,O];
+var highlightHospId=null;
+var msSt,msMsa,msUr,msSy,msHd,msSn,msSh,msSs;
+
+/* Multi-select dropdown. initial = optional Set of initially-selected values, labelFn = optional function(val)->displayLabel */
+function ms(cid,opts,lbl,cb,initial,labelFn){
+    var c=document.getElementById(cid);
+    var sel=initial?new Set(initial):new Set(opts);
+    var gl=labelFn||function(v){return v;};
+    var btn=document.createElement('div');btn.className='msb';
+    var dd=document.createElement('div');dd.className='msd';
+    var sr=document.createElement('input');sr.className='mss';sr.placeholder='Search...';
+    sr.onclick=function(e){e.stopPropagation();};
+    sr.oninput=function(){var q=sr.value.toLowerCase();dd.querySelectorAll('.mo').forEach(function(e){var txt=gl(e.dataset.v).toLowerCase();e.style.display=txt.indexOf(q)>=0?'':'none';});};
+    var ac=document.createElement('div');ac.className='msa';
+    var sa=document.createElement('button');sa.textContent='All';
+    sa.onclick=function(e){e.stopPropagation();opts.forEach(function(o){sel.add(o);});uc();cb();ul();};
+    var ca=document.createElement('button');ca.textContent='None';
+    ca.onclick=function(e){e.stopPropagation();sel.clear();uc();cb();ul();};
+    ac.append(sa,ca);dd.append(sr,ac);
+    opts.forEach(function(o){
+        var l=document.createElement('label');l.className='mo';l.dataset.v=o;
+        var x=document.createElement('input');x.type='checkbox';x.checked=sel.has(o);
+        x.onchange=function(){if(x.checked)sel.add(o);else sel.delete(o);cb();ul();};
+        var ob=document.createElement('button');ob.className='only-btn';ob.textContent='only';
+        ob.onclick=function(e){e.stopPropagation();e.preventDefault();sel.clear();sel.add(o);uc();cb();ul();};
+        l.append(x,document.createTextNode(' '+gl(o)),ob);dd.appendChild(l);
+    });
+    function uc(){dd.querySelectorAll('.mo input').forEach(function(x){x.checked=sel.has(x.parentElement.dataset.v);});}
+    function ul(){
+        if(sel.size===opts.length)btn.textContent=lbl;
+        else if(!sel.size)btn.textContent='None';
+        else if(sel.size<=2)btn.textContent=[].concat(Array.from(sel)).map(gl).join(', ');
+        else btn.textContent=sel.size+' selected';
+    }
+    ul();
+    btn.onclick=function(e){e.stopPropagation();document.querySelectorAll('.msd.open').forEach(function(d){if(d!==dd)d.classList.remove('open');});dd.classList.toggle('open');};
+    c.append(btn,dd);
+    return{
+        get:function(){return sel;},
+        /* Show only options in validSet; deselect any that are no longer valid */
+        filterOpts:function(validSet){
+            var changed=false;
+            dd.querySelectorAll('.mo').forEach(function(e){
+                var v=e.dataset.v;
+                if(validSet.has(v)){e.style.display='';}
+                else{e.style.display='none';if(sel.has(v)){sel.delete(v);changed=true;}}
+            });
+            uc();ul();
+            /* If all were deselected, auto-select all valid */
+            if(!sel.size&&validSet.size){validSet.forEach(function(v){sel.add(v);});uc();ul();changed=true;}
+            return changed;
+        },
+        selectAll:function(){opts.forEach(function(o){sel.add(o);});uc();ul();}
+    };
+}
+document.addEventListener('click',function(){document.querySelectorAll('.msd.open').forEach(function(d){d.classList.remove('open');});});
+
+function seed(s){var x=Math.sin(s)*10000;return x-Math.floor(x);}
+function avg(a){return a.length?a.reduce(function(s,v){return s+v;},0)/a.length:null;}
+
+function quantile(sorted,q){
+    if(!sorted.length)return null;
+    var pos=(sorted.length-1)*q;
+    var lo=Math.floor(pos),hi=Math.ceil(pos);
+    if(lo===hi)return sorted[lo];
+    return sorted[lo]*(hi-pos)+sorted[hi]*(pos-lo);
+}
+function calcStats(arr){
+    if(!arr.length)return null;
+    var s=arr.slice().sort(function(a,b){return a-b;});
+    return{q1:quantile(s,0.25),med:quantile(s,0.5),q3:quantile(s,0.75)};
+}
+function hexToRgb(hex){
+    return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);
+}
+
+/* ---- IQR/Median Plugin (draws BEHIND points) ---- */
+var iqrPlugin={
+    id:'iqrBands',
+    beforeDatasetsDraw:function(chart){
+        var cfg=chart.options.plugins.iqrBands;
+        if(!cfg||!cfg.stats)return;
+        var stats=cfg.stats,cw=cfg.cw,gp=cfg.gp,colors=cfg.colors||[];
+        var ctx=chart.ctx,xS=chart.scales.x,yS=chart.scales.y;
+        var area=chart.chartArea;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(area.left,area.top,area.right-area.left,area.bottom-area.top);
+        ctx.clip();
+        /* Zero line if configured */
+        if(cfg.zeroLine){
+            var py0=yS.getPixelForValue(0);
+            if(py0>=area.top&&py0<=area.bottom){
+                ctx.strokeStyle='#1a1a2e';
+                ctx.lineWidth=2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(area.left,py0);
+                ctx.lineTo(area.right,py0);
+                ctx.stroke();
+            }
+        }
+        for(var i=0;i<stats.length;i++){
+            var st=stats[i];
+            if(!st)continue;
+            var cc=colors[i]||'#888888';
+            var rgb=hexToRgb(cc);
+            var xC=i*(cw+gp)+cw/2;
+            var xL=xC-cw*0.44;
+            var xR=xC+cw*0.44;
+            var pL=xS.getPixelForValue(xL);
+            var pR=xS.getPixelForValue(xR);
+            var pQ1=yS.getPixelForValue(st.q1);
+            var pQ3=yS.getPixelForValue(st.q3);
+            var pMed=yS.getPixelForValue(st.med);
+            var top=Math.min(pQ1,pQ3);
+            var h=Math.abs(pQ1-pQ3);
+            /* IQR shaded band */
+            ctx.fillStyle='rgba('+rgb+',0.13)';
+            ctx.fillRect(pL,top,pR-pL,h);
+            /* IQR dashed border */
+            ctx.strokeStyle='rgba('+rgb+',0.35)';
+            ctx.lineWidth=1.5;
+            ctx.setLineDash([5,4]);
+            ctx.strokeRect(pL,top,pR-pL,h);
+            ctx.setLineDash([]);
+            /* Median line */
+            ctx.strokeStyle='rgba('+rgb+',0.9)';
+            ctx.lineWidth=2.5;
+            ctx.beginPath();
+            ctx.moveTo(pL,pMed);
+            ctx.lineTo(pR,pMed);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+};
+
+/* ---- Label Plugin (category names below x-axis) ---- */
+var labelPlugin={
+    id:'catLabels',
+    afterDraw:function(chart){
+        var cfg=chart.options.plugins.catLabels;
+        if(!cfg)return;
+        var labels=cfg.labels,cw=cfg.cw,gp=cfg.gp;
+        var ctx=chart.ctx,xS=chart.scales.x,yS=chart.scales.y;
+        ctx.save();
+        ctx.font='600 11px Montserrat,sans-serif';
+        ctx.fillStyle=DK;
+        ctx.textAlign='center';
+        ctx.textBaseline='top';
+        for(var i=0;i<labels.length;i++){
+            var xVal=i*(cw+gp)+cw/2;
+            var px=xS.getPixelForValue(xVal);
+            ctx.fillText(labels[i],px,yS.bottom+8);
+        }
+        ctx.restore();
+    }
+};
+/* Do NOT register globally — pass as per-chart plugins to avoid interfering with pie */
+
+/* ---- HTML overlay stat labels + hover zones ---- */
+function renderStatLabels(chart,containerId){
+    var el=document.getElementById(containerId);
+    if(!el)return;
+    el.innerHTML='';
+    var iqrCfg=chart.options.plugins.iqrBands;
+    if(!iqrCfg||!iqrCfg.stats)return;
+    var catCfg=chart.options.plugins.catLabels;
+    if(!catCfg)return;
+    var stats=iqrCfg.stats,colors=iqrCfg.colors||[],cw=catCfg.cw,gp=catCfg.gp;
+    var labels=catCfg.labels||[];
+    var fmt=iqrCfg.fmt||function(v){return v.toFixed(1);};
+    var xS=chart.scales.x,yS=chart.scales.y;
+    var area=chart.chartArea;
+    var canvas=chart.canvas;
+    var scaleX=canvas.offsetWidth/canvas.width;
+    var scaleY=canvas.offsetHeight/canvas.height;
+    for(var i=0;i<stats.length;i++){
+        var st=stats[i];
+        if(!st)continue;
+        var cc=colors[i]||'#888888';
+        var catName=labels[i]||('Category '+(i+1));
+        var xC=i*(cw+gp)+cw/2;
+        var xL=xC-cw*0.44;
+        var xR=xC+cw*0.44;
+        var pL=xS.getPixelForValue(xL)*scaleX;
+        var pR=xS.getPixelForValue(xR)*scaleX;
+        var pQ1=yS.getPixelForValue(st.q1)*scaleY;
+        var pQ3=yS.getPixelForValue(st.q3)*scaleY;
+        var pMed=yS.getPixelForValue(st.med)*scaleY;
+        var topY=Math.min(pQ1,pQ3);
+        var botY=Math.max(pQ1,pQ3);
+        var left=pR+5;
+        /* Median label */
+        if(pMed>=area.top*scaleY&&pMed<=area.bottom*scaleY){
+            var m=document.createElement('div');
+            m.className='stat-lbl med';
+            m.style.color=cc;
+            m.style.left=left+'px';
+            m.style.top=(pMed-8)+'px';
+            m.textContent='Med: '+fmt(st.med);
+            el.appendChild(m);
+        }
+        /* Q3 label */
+        if(topY>=area.top*scaleY&&topY<=area.bottom*scaleY){
+            var q3=document.createElement('div');
+            q3.className='stat-lbl iqr';
+            q3.style.color=cc;
+            q3.style.left=left+'px';
+            q3.style.top=(topY-14)+'px';
+            q3.textContent='Q3: '+fmt(st.q3);
+            el.appendChild(q3);
+        }
+        /* Q1 label */
+        if(botY>=area.top*scaleY&&botY<=area.bottom*scaleY){
+            var q1=document.createElement('div');
+            q1.className='stat-lbl iqr';
+            q1.style.color=cc;
+            q1.style.left=left+'px';
+            q1.style.top=(botY+2)+'px';
+            q1.textContent='Q1: '+fmt(st.q1);
+            el.appendChild(q1);
+        }
+        /* Invisible hover zone over IQR band + median */
+        var hzTop=Math.max(topY-4,area.top*scaleY);
+        var hzBot=Math.min(botY+4,area.bottom*scaleY);
+        var hz=document.createElement('div');
+        hz.className='iqr-hover';
+        hz.style.left=pL+'px';
+        hz.style.top=hzTop+'px';
+        hz.style.width=(pR-pL)+'px';
+        hz.style.height=(hzBot-hzTop)+'px';
+        hz.dataset.cat=catName;
+        hz.dataset.med=fmt(st.med);
+        hz.dataset.q1=fmt(st.q1);
+        hz.dataset.q3=fmt(st.q3);
+        hz.addEventListener('mouseenter',function(ev){
+            var d=this.dataset;
+            var t=document.getElementById('tip');t.style.display='block';
+            t.innerHTML='<div class="tn">'+d.cat+' — Distribution</div>'+
+                '<div class="tr"><span class="tl">Median</span><span class="tv">'+d.med+'</span></div>'+
+                '<div class="tr"><span class="tl">75th Percentile (Q3)</span><span class="tv">'+d.q3+'</span></div>'+
+                '<div class="tr"><span class="tl">25th Percentile (Q1)</span><span class="tv">'+d.q1+'</span></div>'+
+                '<div class="tr"><span class="tl">IQR</span><span class="tv">'+d.q1+' to '+d.q3+'</span></div>';
+            var x=ev.clientX+14,y=ev.clientY+14;
+            if(x+290>window.innerWidth)x=ev.clientX-290;
+            if(y+180>window.innerHeight)y=ev.clientY-180;
+            t.style.left=x+'px';t.style.top=y+'px';
+        });
+        hz.addEventListener('mousemove',function(ev){
+            var t=document.getElementById('tip');
+            var x=ev.clientX+14,y=ev.clientY+14;
+            if(x+290>window.innerWidth)x=ev.clientX-290;
+            if(y+180>window.innerHeight)y=ev.clientY-180;
+            t.style.left=x+'px';t.style.top=y+'px';
+        });
+        hz.addEventListener('mouseleave',function(){ht();});
+        el.appendChild(hz);
+    }
+}
+
+function cascadeFilters(){
+    var sts=msSt.get();
+    /* Find valid MSAs and Systems for selected states */
+    var validMsas=new Set();
+    var validSys=new Set();
+    var validHd=new Set();
+    var validSn=new Set();
+    var validSh=new Set();
+    var validSs=new Set();
+    D.forEach(function(d){
+        if(!sts.has(d.s))return;
+        if(d.m)validMsas.add(d.m);
+        if(d.sy)validSys.add(d.sy);
+        if(d.hd)validHd.add(d.hd);
+        if(d.sh)validSh.add(d.sh);
+        if(d.ss)validSs.add(d.ss);
+        if(SENATE&&SENATE[d.s])SENATE[d.s].forEach(function(sn){validSn.add(d.s+':'+sn);});
+    });
+    msMsa.filterOpts(validMsas);
+    msSy.filterOpts(validSys);
+    msHd.filterOpts(validHd);
+    msSn.filterOpts(validSn);
+    msSh.filterOpts(validSh);
+    msSs.filterOpts(validSs);
+}
+
+function go(){
+    var yr=+document.getElementById('f-yr').value;
+    var sts=msSt.get(),msas=msMsa.get(),urs=msUr.get(),sys=msSy.get();
+    var hds=msHd.get(),sns=msSn.get();
+    var shs=msSh.get(),sss=msSs.get();
+    var blo=+document.getElementById('f-blo').value||0,bhi=+document.getElementById('f-bhi').value||3000;
+    var ica=document.getElementById('f-ca').checked;
+    /* Build set of states selected via senate filter */
+    var snStates=new Set();
+    sns.forEach(function(v){snStates.add(v.split(':')[0]);});
+    F=D.filter(function(d){
+        if(d.y!==yr)return false;
+        if(!sts.has(d.s))return false;
+        if(d.m&&!msas.has(d.m))return false;
+        if(d.u&&!urs.has(d.u))return false;
+        if(d.sy&&!sys.has(d.sy))return false;
+        if(d.hd&&!hds.has(d.hd))return false;
+        if(!snStates.has(d.s))return false;
+        if(d.sh&&!shs.has(d.sh))return false;
+        if(d.ss&&!sss.has(d.ss))return false;
+        if(d.b!=null&&(d.b<blo||d.b>bhi))return false;
+        if(!ica&&d.f==='Critical Access')return false;
+        return true;
+    });
+    kpi();pie();mgFn();rdFn();tblUpdate();
+}
+
+function kpi(){
+    document.getElementById('k-cnt').textContent=F.length.toLocaleString();
+    document.getElementById('k-cnt2').textContent='hospitals';
+    /* Median Net Profit Margin (o5) */
+    var np=F.filter(function(d){return d.o5!=null;}).map(function(d){return d.o5;});
+    var npS=calcStats(np);
+    document.getElementById('k-npm').textContent=npS?(npS.med*100).toFixed(1)+'%':'-';
+    /* Median Medicaid Operating Profit Margin (o1) */
+    var md=F.filter(function(d){return d.o1!=null;}).map(function(d){return d.o1;});
+    var mdS=calcStats(md);
+    document.getElementById('k-mcd').textContent=mdS?(mdS.med*100).toFixed(1)+'%':'-';
+    /* Median Commercial Breakeven (cb) */
+    var cb=F.filter(function(d){return d.cb!=null;}).map(function(d){return d.cb;});
+    var cbS=calcStats(cb);
+    document.getElementById('k-cbe').textContent=cbS?cbS.med.toFixed(2)+'x':'-';
+    /* Median RAND 5.1 (r5) */
+    var r5=F.filter(function(d){return d.r5!=null;}).map(function(d){return d.r5;});
+    var r5S=calcStats(r5);
+    document.getElementById('k-rnd').textContent=r5S?r5S.med.toFixed(2)+'x':'-';
+}
+
+function pie(){
+    var ks=['p1','p2','p3','p4','p5','p6'];
+    var ls=['Charity Care','Uninsured/Bad Debt','Medicaid/SCHIP','Medicare','Medicare Adv','Commercial'];
+    var vs=ks.map(function(k){var v=F.filter(function(d){return d[k]!=null;}).map(function(d){return d[k]*100;});return v.length?avg(v):0;});
+    document.getElementById('pie-n').textContent=F.length+' hospitals';
+    /* Destroy and recreate every time to avoid rendering bugs */
+    if(pieC){pieC.destroy();pieC=null;}
+    var wrap=document.getElementById('pie-cv').parentNode;
+    wrap.innerHTML='<canvas id="pie-cv"></canvas>';
+    pieC=new Chart(document.getElementById('pie-cv'),{
+        type:'pie',
+        data:{labels:ls,datasets:[{data:vs,
+            backgroundColor:PC.map(function(c){return 'rgba('+hexToRgb(c)+',0.87)';}),
+            borderColor:'#fff',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:true,
+            plugins:{
+                legend:{position:'right',labels:{font:{family:'Montserrat',size:11},usePointStyle:true,padding:12}},
+                tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0);return ctx.label+': '+(ctx.parsed/t*100).toFixed(1)+'%';}}}
+            }
+        }
+    });
+}
+
+/* ---- Operating Profit Margin chart ---- */
+function mgFn(){
+    var ks=MK,cw=1.6,gp=0.4;
+    var mgStats=ks.map(function(k){
+        var vals=F.filter(function(d){return d[k]!=null&&d[k]>=-5&&d[k]<=5;}).map(function(d){return d[k]*100;});
+        return calcStats(vals);
+    });
+    document.getElementById('sc1-n').textContent=F.length+' hospitals';
+    var ds=[];
+    ks.forEach(function(k,ci){
+        var pts=[];
+        F.forEach(function(d,di){
+            if(d[k]==null)return;
+            var v=d[k];if(v<-5||v>5)return;
+            var cx=ci*(cw+gp)+cw/2,j=(seed(di*7+ci*13)-0.5)*cw*0.8;
+            pts.push({x:cx+j,y:v*100,hi:di,_bg:'rgba('+hexToRgb(MC[ci])+',0.4)',_bc:'rgba('+hexToRgb(MC[ci])+',0.6)',_r:3});
+        });
+        ds.push({label:ML[ci],data:pts,
+            backgroundColor:pts.map(function(p){return p._bg;}),
+            borderColor:pts.map(function(p){return p._bc;}),
+            borderWidth:0.5,pointRadius:pts.map(function(p){return p._r;}),
+            pointHoverRadius:6,showLine:false,pointStyle:'circle'});
+    });
+    var lo=+document.getElementById('z1lo').value,hi=+document.getElementById('z1hi').value;
+    if(mgC){
+        mgC.data.datasets=ds;
+        mgC.options.plugins.iqrBands.stats=mgStats;
+        mgC.options.scales.y.min=lo;mgC.options.scales.y.max=hi;
+        mgC.update();
+    } else {
+        mgC=new Chart(document.getElementById('mg-cv'),{type:'scatter',data:{datasets:ds},
+            plugins:[iqrPlugin,labelPlugin],
+            options:{responsive:true,maintainAspectRatio:false,animation:false,
+                layout:{padding:{bottom:28,right:90}},
+                plugins:{legend:{display:false},tooltip:{enabled:false},
+                    iqrBands:{stats:mgStats,cw:cw,gp:gp,colors:MC,fmt:function(v){return v.toFixed(1)+'%';},zeroLine:true},
+                    catLabels:{labels:ML,cw:cw,gp:gp}},
+                scales:{x:{min:-0.2,max:5*(cw+gp)-gp+0.2,grid:{display:false},ticks:{display:false}},
+                    y:{min:lo,max:hi,title:{display:true,text:'Operating Profit Margin (%)',font:{family:'Montserrat',size:11,weight:'600'},color:DK},grid:{color:'#eee'},ticks:{callback:function(v){return v+'%';},font:{family:'Montserrat',size:10}}}},
+                onHover:function(e,el){hmFn(e,el);}}});
+        document.getElementById('mg-cv').addEventListener('mouseleave',function(){highlightHospId=null;resetMgColors();mgC.update('none');ht();});
+    }
+    setTimeout(function(){renderStatLabels(mgC,'mg-labels');},50);
+}
+
+function resetMgColors(){
+    if(!mgC)return;
+    mgC.data.datasets.forEach(function(ds){
+        ds.data.forEach(function(p,j){
+            ds.backgroundColor[j]=p._bg;
+            ds.borderColor[j]=p._bc;
+            ds.pointRadius[j]=p._r;
+        });
+    });
+}
+
+function hmFn(e,el){
+    if(!el.length){
+        if(highlightHospId!==null){highlightHospId=null;resetMgColors();mgC.update('none');}
+        ht();return;
+    }
+    var dsObj=mgC.data.datasets[el[0].datasetIndex],pt=dsObj.data[el[0].index],h=F[pt.hi];
+    if(!h||h.i===highlightHospId)return;
+    highlightHospId=h.i;
+    var hoveredKey=MK[el[0].datasetIndex];
+    mgC.data.datasets.forEach(function(ds){
+        ds.data.forEach(function(p,j){
+            var hh=F[p.hi];
+            if(hh&&hh.i===h.i){
+                ds.backgroundColor[j]=HL;
+                ds.borderColor[j]='#6D28D9';
+                ds.pointRadius[j]=9;
+            } else {
+                ds.backgroundColor[j]=p._bg;
+                ds.borderColor[j]=p._bc;
+                ds.pointRadius[j]=p._r;
+            }
+        });
+    });
+    mgC.update('none');
+    st(e.native,h,hoveredKey);
+}
+
+/* ---- RAND chart ---- */
+function rdFn(){
+    var ks=['cb','r5'],cw=1.6,gp=0.6;
+    var rdStats=ks.map(function(k){
+        var vals=F.filter(function(d){return d[k]!=null&&d[k]>=0&&d[k]<=20;}).map(function(d){return d[k];});
+        return calcStats(vals);
+    });
+    document.getElementById('sc2-n').textContent=F.length+' hospitals';
+    var ds=[];
+    ks.forEach(function(k,ci){
+        var pts=[];
+        F.forEach(function(d,di){
+            if(d[k]==null)return;
+            var v=d[k];if(v<0||v>20)return;
+            var cx=ci*(cw+gp)+cw/2,j=(seed(di*11+ci*17)-0.5)*cw*0.8;
+            pts.push({x:cx+j,y:v,hi:di,_bg:'rgba('+hexToRgb(RC[ci])+',0.4)',_bc:'rgba('+hexToRgb(RC[ci])+',0.6)',_r:3});
+        });
+        ds.push({label:RL[ci],data:pts,
+            backgroundColor:pts.map(function(p){return p._bg;}),
+            borderColor:pts.map(function(p){return p._bc;}),
+            borderWidth:0.5,pointRadius:pts.map(function(p){return p._r;}),
+            pointHoverRadius:6,showLine:false,pointStyle:'circle'});
+    });
+    var lo=+document.getElementById('z2lo').value,hi=+document.getElementById('z2hi').value;
+    if(rdC){
+        rdC.data.datasets=ds;
+        rdC.options.plugins.iqrBands.stats=rdStats;
+        rdC.options.scales.y.min=lo;rdC.options.scales.y.max=hi;
+        rdC.update();
+    } else {
+        rdC=new Chart(document.getElementById('rd-cv'),{type:'scatter',data:{datasets:ds},
+            plugins:[iqrPlugin,labelPlugin],
+            options:{responsive:true,maintainAspectRatio:false,animation:false,
+                layout:{padding:{bottom:28,right:90}},
+                plugins:{legend:{display:false},tooltip:{enabled:false},
+                    iqrBands:{stats:rdStats,cw:cw,gp:gp,colors:RC,fmt:function(v){return v.toFixed(2)+'x';}},
+                    catLabels:{labels:RL,cw:cw,gp:gp}},
+                scales:{x:{min:-0.2,max:2*(cw+gp)-gp+0.2,grid:{display:false},ticks:{display:false}},
+                    y:{min:lo,max:hi,title:{display:true,text:'Price (multiple of Medicare)',font:{family:'Montserrat',size:11,weight:'600'},color:DK},grid:{color:'#eee'},ticks:{callback:function(v){return v.toFixed(1)+'x';},font:{family:'Montserrat',size:10}}}},
+                onHover:function(e,el){hrFn(e,el);}}});
+        document.getElementById('rd-cv').addEventListener('mouseleave',function(){highlightHospId=null;resetRdColors();rdC.update('none');ht();});
+    }
+    setTimeout(function(){renderStatLabels(rdC,'rd-labels');},50);
+}
+
+function resetRdColors(){
+    if(!rdC)return;
+    rdC.data.datasets.forEach(function(ds){
+        ds.data.forEach(function(p,j){
+            ds.backgroundColor[j]=p._bg;
+            ds.borderColor[j]=p._bc;
+            ds.pointRadius[j]=p._r;
+        });
+    });
+}
+
+function hrFn(e,el){
+    if(!el.length){
+        if(highlightHospId!==null){highlightHospId=null;resetRdColors();rdC.update('none');}
+        ht();return;
+    }
+    var dsObj=rdC.data.datasets[el[0].datasetIndex],pt=dsObj.data[el[0].index],h=F[pt.hi];
+    if(!h||h.i===highlightHospId)return;
+    highlightHospId=h.i;
+    var rdKeys=['cb','r5'];
+    var hoveredKey=rdKeys[el[0].datasetIndex];
+    rdC.data.datasets.forEach(function(ds){
+        ds.data.forEach(function(p,j){
+            var hh=F[p.hi];
+            if(hh&&hh.i===h.i){
+                ds.backgroundColor[j]=HL;
+                ds.borderColor[j]='#6D28D9';
+                ds.pointRadius[j]=9;
+            } else {
+                ds.backgroundColor[j]=p._bg;
+                ds.borderColor[j]=p._bc;
+                ds.pointRadius[j]=p._r;
+            }
+        });
+    });
+    rdC.update('none');
+    st(e.native,h,hoveredKey);
+}
+
+function zm1(){
+    var lo=+document.getElementById('z1lo').value,hi=+document.getElementById('z1hi').value;
+    if(lo>=hi)hi=lo+5;
+    document.getElementById('z1l').textContent=lo+'%';document.getElementById('z1h').textContent=hi+'%';
+    if(mgC){mgC.options.scales.y.min=lo;mgC.options.scales.y.max=hi;mgC.update();setTimeout(function(){renderStatLabels(mgC,'mg-labels');},50);}
+}
+function zm2(){
+    var lo=+document.getElementById('z2lo').value,hi=+document.getElementById('z2hi').value;
+    if(lo>=hi)hi=lo+0.5;
+    document.getElementById('z2l').textContent=lo.toFixed(1);document.getElementById('z2h').textContent=hi.toFixed(1);
+    if(rdC){rdC.options.scales.y.min=lo;rdC.options.scales.y.max=hi;rdC.update();setTimeout(function(){renderStatLabels(rdC,'rd-labels');},50);}
+}
+
+/* Map margin data key to its payer mix key (null for Net Profit) */
+var marginToPayer={o1:'p3',o2:'p4',o3:'p5',o4:'p6',o5:null};
+/* Map margin data key to readable label */
+var marginLabel={o5:'Net Profit Margin',o1:'Medicaid/SCHIP Margin',o2:'Medicare Margin',o3:'Medicare Adv Margin',o4:'Commercial Margin',cb:'Commercial Breakeven',r5:'RAND 5.1'};
+var payerLabel={p3:'Medicaid/SCHIP Payer Mix',p4:'Medicare Payer Mix',p5:'Medicare Adv Payer Mix',p6:'Commercial Payer Mix'};
+
+function st(ev,h,marginKey){
+    var t=document.getElementById('tip');t.style.display='block';
+    var html='<div class="tn">'+h.n+'</div>'+
+        '<div class="tr"><span class="tl">City</span><span class="tv">'+h.c+', '+h.s+'</span></div>'+
+        '<div class="tr"><span class="tl">Beds</span><span class="tv">'+(h.b||'N/A')+'</span></div>'+
+        '<div class="tr"><span class="tl">Type</span><span class="tv">'+h.o+' / '+h.f+'</span></div>'+
+        '<div class="tr"><span class="tl">System</span><span class="tv">'+(h.sy||'Independent')+'</span></div>'+
+        '<div class="tr"><span class="tl">Metro</span><span class="tv">'+(h.m||'Non-Metro')+'</span></div>';
+    /* Show the exact value for the hovered category */
+    if(marginKey&&marginLabel[marginKey]){
+        var mv=h[marginKey];
+        var isRand=(marginKey==='cb'||marginKey==='r5');
+        var fmtVal=mv!=null?(isRand?mv.toFixed(2)+'x':(mv*100).toFixed(1)+'%'):'N/A';
+        html+='<div class="tr" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.15);padding-top:4px"><span class="tl">'+marginLabel[marginKey]+'</span><span class="tv">'+fmtVal+'</span></div>';
+        /* For RAND chart: show the other metric too */
+        if(marginKey==='cb'){
+            var r5v=h.r5;
+            html+='<div class="tr"><span class="tl">'+marginLabel.r5+'</span><span class="tv">'+(r5v!=null?r5v.toFixed(2)+'x':'N/A')+'</span></div>';
+        } else if(marginKey==='r5'){
+            var cbv=h.cb;
+            html+='<div class="tr"><span class="tl">'+marginLabel.cb+'</span><span class="tv">'+(cbv!=null?cbv.toFixed(2)+'x':'N/A')+'</span></div>';
+        }
+        /* Show corresponding payer mix if applicable (margin categories only) */
+        var pk=marginToPayer[marginKey];
+        if(pk&&payerLabel[pk]){
+            var pv=h[pk];
+            html+='<div class="tr"><span class="tl">'+payerLabel[pk]+'</span><span class="tv">'+(pv!=null?(pv*100).toFixed(1)+'%':'N/A')+'</span></div>';
+        }
+    }
+    t.innerHTML=html;
+    var x=ev.clientX+14,y=ev.clientY+14;
+    if(x+290>window.innerWidth)x=ev.clientX-290;
+    if(y+180>window.innerHeight)y=ev.clientY-180;
+    t.style.left=x+'px';t.style.top=y+'px';
+}
+function ht(){document.getElementById('tip').style.display='none';}
+
+/* ---- PDF Report Generation ---- */
+var YEARS=[2020,2021,2022,2023,2024];
+var PDF_COLORS={dk:[0,45,116],blue:[58,74,159],orange:[242,104,82],teal:[0,169,197],mid:[42,125,225],yel:[255,209,0],gray:[107,109,111],lgray:[219,220,221],text:[26,26,46],white:[255,255,255]};
+
+function pdfPrompt(){
+    var n=F.length;
+    var desc='Generate a PDF report for <b>'+n+' hospital'+(n!==1?'s':'')+'</b> based on current filters.';
+    var warnHtml='';
+    if(n>50){
+        warnHtml='<div class="warn severe">&#9888; Large selection: '+n+' hospitals will produce a '+(n+1)+'-page PDF. This may take 1–3 minutes.</div>';
+    } else if(n>25){
+        warnHtml='<div class="warn">&#9888; This will generate '+(n+1)+' pages (1 summary + '+n+' hospital pages). May take 30–60 seconds.</div>';
+    }
+    if(n===0){desc='No hospitals match the current filters. Adjust filters to generate a report.';warnHtml='';}
+    document.getElementById('pdf-modal-desc').innerHTML=desc;
+    document.getElementById('pdf-modal-warn').innerHTML=warnHtml;
+    document.getElementById('pdf-btn-full').disabled=(n===0);
+    document.getElementById('pdf-btn-summary').disabled=(n===0);
+    document.getElementById('pdf-modal').classList.add('open');
+}
+function pdfClose(){document.getElementById('pdf-modal').classList.remove('open');}
+
+function pdfProgress(pct,txt){
+    var el=document.getElementById('pdf-progress');
+    el.style.display='block';
+    document.getElementById('pdf-bar-fill').style.width=Math.round(pct)+'%';
+    document.getElementById('pdf-bar-text').textContent=txt||('Generating... '+Math.round(pct)+'%');
+}
+
+function getFilterDesc(){
+    var yr=document.getElementById('f-yr').value;
+    var parts=[];
+    var stSel=msSt.get();
+    if(stSel.size<=3)parts.push('State: '+Array.from(stSel).join(', '));
+    else parts.push('States: '+stSel.size+' selected');
+    var mSel=msMsa.get();
+    if(mSel.size<=2)parts.push('Metro: '+Array.from(mSel).join(', '));
+    else parts.push('Metros: '+mSel.size+' selected');
+    parts.push('Year: '+yr);
+    parts.push('Beds: '+document.getElementById('f-blo').value+'–'+document.getElementById('f-bhi').value);
+    var ica=document.getElementById('f-ca').checked;
+    if(ica)parts.push('Including Critical Access');
+    else parts.push('Excluding Critical Access');
+    return parts.join(' | ');
+}
+
+/* Get all yearly records for hospitals matching current non-year filters */
+function getMultiYearData(){
+    var sts=msSt.get(),msas=msMsa.get(),urs=msUr.get(),sys=msSy.get();
+    var hds=msHd.get(),sns=msSn.get();
+    var shs=msSh.get(),sss=msSs.get();
+    var snStates=new Set();
+    sns.forEach(function(v){snStates.add(v.split(':')[0]);});
+    var blo=+document.getElementById('f-blo').value||0,bhi=+document.getElementById('f-bhi').value||3000;
+    var ica=document.getElementById('f-ca').checked;
+    return D.filter(function(d){
+        if(!sts.has(d.s))return false;
+        if(d.m&&!msas.has(d.m))return false;
+        if(d.u&&!urs.has(d.u))return false;
+        if(d.sy&&!sys.has(d.sy))return false;
+        if(d.hd&&!hds.has(d.hd))return false;
+        if(!snStates.has(d.s))return false;
+        if(d.sh&&!shs.has(d.sh))return false;
+        if(d.ss&&!sss.has(d.ss))return false;
+        if(d.b!=null&&(d.b<blo||d.b>bhi))return false;
+        if(!ica&&d.f==='Critical Access')return false;
+        return true;
+    });
+}
+
+function pdfFileName(summaryOnly){
+    var parts=['NASHP'];
+    var stSel=msSt.get();
+    if(stSel.size<=3)parts.push(Array.from(stSel).join('-'));
+    else parts.push(stSel.size+'States');
+    var yr=document.getElementById('f-yr').value;
+    parts.push(yr);
+    parts.push(F.length+'Hosp');
+    parts.push(summaryOnly?'Summary':'Full');
+    return parts.join('_').replace(/[^a-zA-Z0-9_\-]/g,'')+'.pdf';
+}
+
+/* ---- jsPDF drawing helpers ---- */
+function pdfSetFont(doc,style,size){doc.setFontSize(size);doc.setFont('helvetica',style);}
+function pdfColor(doc,rgb){doc.setTextColor(rgb[0],rgb[1],rgb[2]);}
+function pdfFill(doc,rgb){doc.setFillColor(rgb[0],rgb[1],rgb[2]);}
+function pdfStroke(doc,rgb){doc.setDrawColor(rgb[0],rgb[1],rgb[2]);}
+
+/* Draw a pie chart at (cx,cy) with radius r. slices=[{val,color,label}] */
+function pdfPie(doc,cx,cy,r,slices){
+    var total=slices.reduce(function(s,sl){return s+sl.val;},0);
+    if(total<=0)return;
+    var angle=-Math.PI/2; /* start at top */
+    slices.forEach(function(sl){
+        if(sl.val<=0)return;
+        var sweep=sl.val/total*Math.PI*2;
+        var endAngle=angle+sweep;
+        /* Draw filled arc wedge */
+        pdfFill(doc,sl.color);
+        doc.setLineWidth(0.3);
+        pdfStroke(doc,[255,255,255]);
+        /* Build arc path manually */
+        var steps=Math.max(Math.ceil(sweep/(Math.PI/20)),2);
+        var pts=[[cx,cy]];
+        for(var i=0;i<=steps;i++){
+            var a=angle+sweep*i/steps;
+            pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);
+        }
+        /* Use triangle fill approximation */
+        for(var i=1;i<pts.length-1;i++){
+            doc.triangle(pts[0][0],pts[0][1],pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'F');
+        }
+        /* Label */
+        var midA=angle+sweep/2;
+        var lx=cx+(r+3)*Math.cos(midA);
+        var ly=cy+(r+3)*Math.sin(midA);
+        var pct=(sl.val/total*100).toFixed(1)+'%';
+        pdfSetFont(doc,'normal',7);
+        pdfColor(doc,PDF_COLORS.text);
+        doc.setFont('helvetica','normal');
+        var align=Math.cos(midA)>=0?'left':'right';
+        doc.text(sl.label+' ('+pct+')',lx,ly,{align:align,baseline:'middle'});
+        angle=endAngle;
+    });
+}
+
+/* Draw a grouped bar chart. groups=[{label,bars:[{val,color,label}]}]. x,y=top-left, w,h=size */
+function pdfBars(doc,x,y,w,h,groups,yLabel,fmtVal,yMin,yMax,opts){
+    if(!groups.length)return;
+    opts=opts||{};
+    /* Auto-range if not provided */
+    if(yMin==null||yMax==null){
+        var allVals=[];
+        groups.forEach(function(g){g.bars.forEach(function(b){if(b.val!=null)allVals.push(b.val);});});
+        if(!allVals.length)return;
+        yMin=yMin!=null?yMin:Math.min(0,Math.min.apply(null,allVals)*1.15);
+        yMax=yMax!=null?yMax:Math.max(0,Math.max.apply(null,allVals)*1.15);
+    }
+    if(yMax===yMin)yMax=yMin+1;
+    var range=yMax-yMin;
+    /* Green/red background shading */
+    if(opts.zeroShade&&yMin<0&&yMax>0){
+        var zy=y+h-(0-yMin)/range*h;
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({opacity:0.08}));
+        /* Green above zero */
+        pdfFill(doc,[34,139,34]);
+        doc.rect(x,y,w,zy-y,'F');
+        /* Red below zero */
+        pdfFill(doc,[220,38,38]);
+        doc.rect(x,zy,w,y+h-zy,'F');
+        doc.restoreGraphicsState();
+    }
+    /* Axes */
+    pdfStroke(doc,PDF_COLORS.lgray);
+    doc.setLineWidth(0.3);
+    /* zero line */
+    if(yMin<0&&yMax>0){
+        var zy2=y+h-(0-yMin)/range*h;
+        pdfStroke(doc,[80,80,80]);
+        doc.setLineWidth(0.5);
+        doc.line(x,zy2,x+w,zy2);
+    }
+    /* Y-axis label */
+    pdfSetFont(doc,'normal',6);
+    pdfColor(doc,PDF_COLORS.gray);
+    /* Y ticks */
+    var nTicks=5;
+    for(var t=0;t<=nTicks;t++){
+        var tv=yMin+(yMax-yMin)*t/nTicks;
+        var ty=y+h-t/nTicks*h;
+        pdfStroke(doc,PDF_COLORS.lgray);
+        doc.setLineWidth(0.15);
+        doc.line(x,ty,x+w,ty);
+        doc.text(fmtVal?fmtVal(tv):tv.toFixed(0),x-2,ty,{align:'right',baseline:'middle'});
+    }
+    /* Bars */
+    var gw=w/groups.length;
+    groups.forEach(function(g,gi){
+        var nBars=g.bars.length;
+        var bw=gw*0.7/nBars;
+        var bStart=x+gi*gw+gw*0.15;
+        var hasAny=g.bars.some(function(b){return b.val!=null;});
+        if(!hasAny){
+            /* Show "No Data" centered in group */
+            pdfSetFont(doc,'normal',6);
+            pdfColor(doc,PDF_COLORS.gray);
+            doc.text('No Data',x+gi*gw+gw/2,y+h/2,{align:'center',baseline:'middle'});
+        }
+        g.bars.forEach(function(b,bi){
+            if(b.val==null)return;
+            var bx=bStart+bi*bw;
+            var baseY=y+h-(0-yMin)/range*h; /* pixel y of zero (or yMin if all positive) */
+            if(yMin>=0)baseY=y+h;
+            var barTop=y+h-(b.val-yMin)/range*h;
+            var barH=baseY-barTop;
+            pdfFill(doc,b.color);
+            if(barH>=0)doc.rect(bx,barTop,bw-0.5,barH,'F');
+            else doc.rect(bx,baseY,bw-0.5,-barH,'F');
+            /* Value label above bar */
+            pdfSetFont(doc,'bold',5.5);
+            pdfColor(doc,PDF_COLORS.dk);
+            var labelY=barH>=0?barTop-1.5:baseY-barH+4;
+            doc.text(fmtVal?fmtVal(b.val):b.val.toFixed(1),bx+bw/2-0.25,labelY,{align:'center'});
+        });
+        /* Group label */
+        pdfSetFont(doc,'bold',6.5);
+        pdfColor(doc,PDF_COLORS.text);
+        doc.text(g.label,x+gi*gw+gw/2,y+h+5,{align:'center'});
+    });
+    /* Y axis title */
+    if(yLabel){
+        pdfSetFont(doc,'normal',6);
+        pdfColor(doc,PDF_COLORS.gray);
+        doc.text(yLabel,x-12,y+h/2,{angle:90,align:'center'});
+    }
+}
+
+/* Draw a data table. x,y=top-left. cols=[{label,width}]. rows=[[val,...]] */
+function pdfTable(doc,x,y,cols,rows,optRowH,optHdrH){
+    var rowH=optRowH||5.5,hdrH=optHdrH||6.5;
+    /* Header */
+    pdfFill(doc,PDF_COLORS.dk);
+    var totalW=cols.reduce(function(s,c){return s+c.width;},0);
+    doc.rect(x,y,totalW,hdrH,'F');
+    pdfSetFont(doc,'bold',6.5);
+    pdfColor(doc,PDF_COLORS.white);
+    var cx=x;
+    cols.forEach(function(c){
+        doc.text(c.label,cx+c.width/2,y+hdrH/2+0.5,{align:'center',baseline:'middle'});
+        cx+=c.width;
+    });
+    /* Rows */
+    var ry=y+hdrH;
+    rows.forEach(function(row,ri){
+        if(ri%2===0){pdfFill(doc,[245,246,248]);doc.rect(x,ry,totalW,rowH,'F');}
+        pdfSetFont(doc,'normal',6);
+        pdfColor(doc,PDF_COLORS.text);
+        cx=x;
+        row.forEach(function(val,ci){
+            var align=ci===0?'left':'center';
+            var tx=ci===0?cx+1.5:cx+cols[ci].width/2;
+            doc.text(String(val),tx,ry+rowH/2+0.3,{align:align,baseline:'middle'});
+            cx+=cols[ci].width;
+        });
+        ry+=rowH;
+    });
+    return ry;
+}
+
+/* ---- Generate PDF ---- */
+function pdfGo(summaryOnly){
+    pdfClose();
+    if(typeof jspdf==='undefined'||!jspdf.jsPDF){alert('PDF library failed to load. Please check your internet connection and reload.');return;}
+    var allData=getMultiYearData();
+    /* Unique hospitals by CCN (use most recent year for info) */
+    var hospMap={};
+    allData.forEach(function(d){
+        if(!hospMap[d.i]||d.y>hospMap[d.i].latest)hospMap[d.i]={id:d.i,latest:d.y,records:[]};
+    });
+    allData.forEach(function(d){if(hospMap[d.i])hospMap[d.i].records.push(d);});
+    /* Filter to hospitals in current F (selected year) */
+    var fIds=new Set(F.map(function(d){return d.i;}));
+    var hospitals=[];
+    fIds.forEach(function(id){if(hospMap[id])hospitals.push(hospMap[id]);});
+    hospitals.sort(function(a,b){
+        var an=a.records[0].n,bn=b.records[0].n;
+        return an<bn?-1:an>bn?1:0;
+    });
+    var totalPages=summaryOnly?1:1+hospitals.length;
+    var doc=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+    var pw=215.9,ph=279.4; /* letter size in mm */
+    var mg=15; /* margin */
+
+    pdfProgress(0,'Building summary page...');
+
+    /* ===== PAGE 1: SUMMARY ===== */
+    setTimeout(function(){
+        try{
+        /* Section divider helper */
+        function pdfDivider(y){
+            pdfStroke(doc,PDF_COLORS.lgray);
+            doc.setLineWidth(0.3);
+            doc.line(mg,y,pw-mg,y);
+            return y+5;
+        }
+
+        /* Title and filter description */
+        pdfSetFont(doc,'bold',13);
+        pdfColor(doc,PDF_COLORS.dk);
+        doc.text('NASHP Hospital Cost & Transparency Report',mg,mg+8);
+        pdfSetFont(doc,'normal',7.5);
+        pdfColor(doc,PDF_COLORS.gray);
+        doc.text(getFilterDesc()+' | '+F.length+' hospitals | Generated '+(new Date().toLocaleDateString()),mg,mg+13);
+        /* Divider */
+        pdfStroke(doc,PDF_COLORS.blue);
+        doc.setLineWidth(0.8);
+        doc.line(mg,mg+16,pw-mg,mg+16);
+
+        /* === Summary KPIs by year === */
+        var curY=mg+21;
+        pdfSetFont(doc,'bold',9);
+        pdfColor(doc,PDF_COLORS.dk);
+        doc.text('Summary Statistics by Year',mg,curY);
+        curY+=4;
+        /* Compute stats per year */
+        var yrStats=YEARS.map(function(yr){
+            var yd=allData.filter(function(d){return d.y===yr&&fIds.has(d.i);});
+            if(!yd.length)return null;
+            var npm=calcStats(yd.filter(function(d){return d.o5!=null;}).map(function(d){return d.o5*100;}));
+            var mcdm=calcStats(yd.filter(function(d){return d.o1!=null;}).map(function(d){return d.o1*100;}));
+            var mcrm=calcStats(yd.filter(function(d){return d.o2!=null;}).map(function(d){return d.o2*100;}));
+            var mam=calcStats(yd.filter(function(d){return d.o3!=null;}).map(function(d){return d.o3*100;}));
+            var com=calcStats(yd.filter(function(d){return d.o4!=null;}).map(function(d){return d.o4*100;}));
+            var cbe=calcStats(yd.filter(function(d){return d.cb!=null;}).map(function(d){return d.cb;}));
+            var rnd=calcStats(yd.filter(function(d){return d.r5!=null;}).map(function(d){return d.r5;}));
+            return{yr:yr,n:yd.length,npm:npm,mcdm:mcdm,mcrm:mcrm,mam:mam,com:com,cbe:cbe,rnd:rnd};
+        }).filter(Boolean);
+
+        /* Summary table — compact rows */
+        var sCols=[{label:'Metric',width:40}];
+        yrStats.forEach(function(s){sCols.push({label:String(s.yr),width:20});});
+        var fmtP=function(st){return st?st.med.toFixed(1)+'%':'—';};
+        var fmtX=function(st){return st?st.med.toFixed(2)+'x':'—';};
+        var sRows=[
+            ['Hospitals'].concat(yrStats.map(function(s){return String(s.n);})),
+            ['Median Net Profit Margin'].concat(yrStats.map(function(s){return fmtP(s.npm);})),
+            ['Median Medicaid Op. Margin'].concat(yrStats.map(function(s){return fmtP(s.mcdm);})),
+            ['Median Medicare Op. Margin'].concat(yrStats.map(function(s){return fmtP(s.mcrm);})),
+            ['Median Medicare Adv. Margin'].concat(yrStats.map(function(s){return fmtP(s.mam);})),
+            ['Median Commercial Margin'].concat(yrStats.map(function(s){return fmtP(s.com);})),
+            ['Median Comm. Breakeven'].concat(yrStats.map(function(s){return fmtX(s.cbe);})),
+            ['Median RAND 5.1'].concat(yrStats.map(function(s){return fmtX(s.rnd);}))
+        ];
+        curY=pdfTable(doc,mg,curY,sCols,sRows,4.8,5.8)+2;
+
+        curY=pdfDivider(curY);
+
+        /* === Payer Mix table by year === */
+        pdfSetFont(doc,'bold',9);
+        pdfColor(doc,PDF_COLORS.dk);
+        doc.text('Average Payer Mix by Year (%)',mg,curY+2);
+        curY+=5;
+        var payerKeys=['p1','p2','p3','p4','p5','p6'];
+        var payerNames=['Charity Care','Uninsured/Bad Debt','Medicaid/SCHIP','Medicare','Medicare Adv','Commercial'];
+        var pCols=[{label:'Payer',width:33}];
+        yrStats.forEach(function(s){pCols.push({label:String(s.yr),width:20});});
+        var pRows=payerKeys.map(function(k,ki){
+            return [payerNames[ki]].concat(yrStats.map(function(s){
+                var vals=allData.filter(function(d){return d.y===s.yr&&fIds.has(d.i)&&d[k]!=null;}).map(function(d){return d[k]*100;});
+                return vals.length?(vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1):'—';
+            }));
+        });
+        curY=pdfTable(doc,mg,curY,pCols,pRows,4.8,5.8)+2;
+
+        curY=pdfDivider(curY);
+
+        /* === Operating Margin bar chart by year === */
+        pdfSetFont(doc,'bold',9);
+        pdfColor(doc,PDF_COLORS.dk);
+        doc.text('Operating Profit Margin — Median by Year (%)',mg,curY+2);
+        /* Legend ABOVE chart, right-aligned on same line as title */
+        var marginCats=['Commercial','Medicaid','Medicare','Medicare Adv'];
+        var marginKeys=['o4','o1','o2','o3'];
+        var marginColors=[PDF_COLORS.orange,PDF_COLORS.blue,PDF_COLORS.dk,PDF_COLORS.mid];
+        var lgX=pw-mg;
+        for(var li=marginCats.length-1;li>=0;li--){
+            var tw=doc.getTextWidth(marginCats[li])+6;
+            pdfSetFont(doc,'normal',5.5);pdfColor(doc,PDF_COLORS.text);
+            doc.text(marginCats[li],lgX-tw+5.5,curY+2.3);
+            pdfFill(doc,marginColors[li]);doc.rect(lgX-tw+1,curY+0.6,3,2.5,'F');
+            lgX-=tw+2;
+        }
+        curY+=5;
+        var barGroups=yrStats.map(function(s){
+            return{label:String(s.yr),bars:marginKeys.map(function(k,ki){
+                var vals=allData.filter(function(d){return d.y===s.yr&&fIds.has(d.i)&&d[k]!=null;}).map(function(d){return d[k]*100;});
+                var st=calcStats(vals);
+                return{val:st?st.med:null,color:marginColors[ki],label:marginCats[ki]};
+            })};
+        });
+        pdfBars(doc,mg+18,curY,pw-2*mg-22,48,barGroups,'%',function(v){return v.toFixed(0)+'%';},-100,100,{zeroShade:true});
+        curY+=55;
+
+        curY=pdfDivider(curY);
+
+        /* === Commercial Breakeven & RAND bar chart by year === */
+        pdfSetFont(doc,'bold',9);
+        pdfColor(doc,PDF_COLORS.dk);
+        doc.text('Commercial Breakeven & RAND 5.1 — Median by Year',mg,curY+2);
+        /* Legend ABOVE chart */
+        lgX=pw-mg;
+        [{c:PDF_COLORS.orange,l:'RAND 5.1'},{c:PDF_COLORS.blue,l:'Comm. Breakeven'}].forEach(function(it){
+            var tw=doc.getTextWidth(it.l)+6;
+            pdfSetFont(doc,'normal',5.5);pdfColor(doc,PDF_COLORS.text);
+            doc.text(it.l,lgX-tw+5.5,curY+2.3);
+            pdfFill(doc,it.c);doc.rect(lgX-tw+1,curY+0.6,3,2.5,'F');
+            lgX-=tw+2;
+        });
+        curY+=5;
+        var beGroups=yrStats.map(function(s){
+            var cbVals=allData.filter(function(d){return d.y===s.yr&&fIds.has(d.i)&&d.cb!=null;}).map(function(d){return d.cb;});
+            var r5Vals=allData.filter(function(d){return d.y===s.yr&&fIds.has(d.i)&&d.r5!=null;}).map(function(d){return d.r5;});
+            var cbSt=calcStats(cbVals),r5St=calcStats(r5Vals);
+            return{label:String(s.yr),bars:[
+                {val:cbSt?cbSt.med:null,color:PDF_COLORS.blue,label:'Breakeven'},
+                {val:r5St?r5St.med:null,color:PDF_COLORS.orange,label:'RAND 5.1'}
+            ]};
+        });
+        pdfBars(doc,mg+18,curY,pw-2*mg-22,46,beGroups,'x Medicare',function(v){return v.toFixed(1)+'x';},0);
+        curY+=49;
+
+        /* Footer */
+        pdfSetFont(doc,'normal',6);
+        pdfColor(doc,PDF_COLORS.gray);
+        doc.text('Source: NASHP Hospital Cost Tool | Texas 2036',mg,ph-8);
+        doc.text('Page 1 of '+totalPages,pw-mg,ph-8,{align:'right'});
+
+        if(summaryOnly){
+            pdfProgress(100,'Done!');
+            doc.save(pdfFileName(true));
+            setTimeout(function(){document.getElementById('pdf-progress').style.display='none';},2000);
+            return;
+        }
+
+        /* ===== HOSPITAL PAGES ===== */
+        var opYMin=-100,opYMax=100;
+
+        var idx=0;
+        function nextHosp(){
+            if(idx>=hospitals.length){
+                pdfProgress(100,'Done!');
+                doc.save(pdfFileName(false));
+                setTimeout(function(){document.getElementById('pdf-progress').style.display='none';},2000);
+                return;
+            }
+            var pct=5+95*idx/hospitals.length;
+            pdfProgress(pct,'Hospital '+(idx+1)+' of '+hospitals.length+'...');
+            var hosp=hospitals[idx];
+            var recs=hosp.records.slice().sort(function(a,b){return a.y-b.y;});
+            var latest=recs[recs.length-1];
+            var hospYears=recs.map(function(r){return r.y;});
+
+            doc.addPage();
+            var curY=mg+5;
+            var pageNum=idx+2;
+
+            /* Hospital header */
+            pdfFill(doc,PDF_COLORS.dk);
+            doc.rect(mg,curY-3,pw-2*mg,12,'F');
+            pdfSetFont(doc,'bold',11);
+            pdfColor(doc,PDF_COLORS.white);
+            doc.text(latest.n,mg+3,curY+4);
+            pdfSetFont(doc,'normal',7);
+            doc.text(latest.c+', '+latest.s,pw-mg-3,curY+1,{align:'right'});
+            doc.text((latest.sy||'Independent')+' | '+(latest.b||'N/A')+' beds | '+latest.o+' | '+latest.f,pw-mg-3,curY+5.5,{align:'right'});
+            curY+=16;
+
+            /* ---- Payer Mix Pie (most recent year) ---- */
+            pdfSetFont(doc,'bold',9);
+            pdfColor(doc,PDF_COLORS.dk);
+            doc.text('Payer Mix ('+latest.y+')',mg,curY+3);
+            curY+=6;
+            var pieSlices=[
+                {val:latest.p1||0,color:PDF_COLORS.blue,label:'Charity'},
+                {val:latest.p2||0,color:PDF_COLORS.orange,label:'Uninsured'},
+                {val:latest.p3||0,color:PDF_COLORS.teal,label:'Medicaid/SCHIP'},
+                {val:latest.p4||0,color:PDF_COLORS.dk,label:'Medicare'},
+                {val:latest.p5||0,color:PDF_COLORS.mid,label:'Medicare Adv'},
+                {val:latest.p6||0,color:PDF_COLORS.yel,label:'Commercial'}
+            ];
+            pdfPie(doc,mg+35,curY+22,20,pieSlices);
+
+            /* Payer mix table next to pie — shifted right for breathing room */
+            var pmCols=[{label:'Payer',width:28}];
+            hospYears.forEach(function(yr){pmCols.push({label:String(yr),width:14});});
+            var pmRows=payerKeys.map(function(k,ki){
+                return [payerNames[ki]].concat(hospYears.map(function(yr){
+                    var rec=recs.filter(function(r){return r.y===yr;})[0];
+                    return rec&&rec[k]!=null?(rec[k]*100).toFixed(1):'—';
+                }));
+            });
+            pdfTable(doc,mg+85,curY,pmCols,pmRows);
+            curY+=50;
+
+            /* ---- Divider ---- */
+            curY=pdfDivider(curY);
+
+            /* ---- Operating Margin bars grouped by year ---- */
+            pdfSetFont(doc,'bold',9);
+            pdfColor(doc,PDF_COLORS.dk);
+            doc.text('Operating Profit Margin by Year (%)',mg,curY+3);
+            /* Legend above chart, right-aligned */
+            var lgX=pw-mg;
+            for(var li=marginCats.length-1;li>=0;li--){
+                var tw=doc.getTextWidth(marginCats[li])+6;
+                pdfSetFont(doc,'normal',5.5);pdfColor(doc,PDF_COLORS.text);
+                doc.text(marginCats[li],lgX-tw+5.5,curY+3.3);
+                pdfFill(doc,marginColors[li]);doc.rect(lgX-tw+1,curY+1.6,3,2.5,'F');
+                lgX-=tw+2;
+            }
+            curY+=7;
+            var mgGroups=hospYears.map(function(yr){
+                var rec=recs.filter(function(r){return r.y===yr;})[0];
+                return{label:String(yr),bars:marginKeys.map(function(k,ki){
+                    return{val:rec&&rec[k]!=null?rec[k]*100:null,color:marginColors[ki],label:marginCats[ki]};
+                })};
+            });
+            pdfBars(doc,mg+18,curY,pw-2*mg-22,65,mgGroups,'%',function(v){return v.toFixed(0)+'%';},opYMin,opYMax,{zeroShade:true});
+            curY+=72;
+
+            /* ---- Divider ---- */
+            curY=pdfDivider(curY);
+
+            /* ---- Commercial Breakeven & RAND bars ---- */
+            pdfSetFont(doc,'bold',9);
+            pdfColor(doc,PDF_COLORS.dk);
+            doc.text('Commercial Breakeven & RAND 5.1',mg,curY+3);
+            /* Legend above chart, right-aligned */
+            lgX=pw-mg;
+            [{c:PDF_COLORS.orange,l:'RAND 5.1'},{c:PDF_COLORS.blue,l:'Comm. Breakeven'}].forEach(function(it){
+                var tw=doc.getTextWidth(it.l)+6;
+                pdfSetFont(doc,'normal',5.5);pdfColor(doc,PDF_COLORS.text);
+                doc.text(it.l,lgX-tw+5.5,curY+3.3);
+                pdfFill(doc,it.c);doc.rect(lgX-tw+1,curY+1.6,3,2.5,'F');
+                lgX-=tw+2;
+            });
+            curY+=7;
+            var beHGroups=hospYears.map(function(yr){
+                var rec=recs.filter(function(r){return r.y===yr;})[0];
+                return{label:String(yr),bars:[
+                    {val:rec&&rec.cb!=null?rec.cb:null,color:PDF_COLORS.blue,label:'Breakeven'},
+                    {val:rec&&rec.r5!=null?rec.r5:null,color:PDF_COLORS.orange,label:'RAND 5.1'}
+                ]};
+            });
+            pdfBars(doc,mg+18,curY,pw-2*mg-22,55,beHGroups,'x Medicare',function(v){return v.toFixed(2)+'x';},0);
+
+            /* Footer */
+            pdfSetFont(doc,'normal',6);
+            pdfColor(doc,PDF_COLORS.gray);
+            doc.text('Source: NASHP Hospital Cost Tool | Texas 2036',mg,ph-8);
+            doc.text('Page '+pageNum+' of '+totalPages,pw-mg,ph-8,{align:'right'});
+
+            idx++;
+            setTimeout(nextHosp,5); /* yield to UI for progress bar */
+        }
+        nextHosp();
+        }catch(ex){
+            console.error('PDF error:',ex);
+            document.getElementById('pdf-bar-text').textContent='Error: '+ex.message;
+        }
+    },50);
+}
+
+/* ---- Hospital Data Table ---- */
+var TBL_COLS=[
+    {key:'i',  label:'CCN',search:true,fmt:function(v){return v||'';}},
+    {key:'n',  label:'Name',search:true,fmt:function(v){return v||'';}},
+    {key:'c',  label:'City',search:true,fmt:function(v){return v||'';}},
+    {key:'s',  label:'State',search:true,fmt:function(v){return v||'';}},
+    {key:'sy', label:'System',search:true,fmt:function(v){return v||'Independent';}},
+    {key:'f',  label:'Type',search:false,fmt:function(v){return v||'';}},
+    {key:'b',  label:'# Beds',search:false,fmt:function(v){return v!=null?v:'';}},
+    {key:'p1', label:'Payer Mix Charity Care',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'p5', label:'Payer Mix Medicare Adv',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'p4', label:'Payer Mix Medicare',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'p6', label:'Payer Mix Commercial',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'r5', label:'RAND 5.1',search:false,fmt:function(v){return v!=null?v.toFixed(2)+'x':'';}},
+    {key:'cb', label:'Comm. Breakeven',search:false,fmt:function(v){return v!=null?v.toFixed(2)+'x':'';}},
+    {key:'o5', label:'Net Profit Margin',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'o1', label:'Op. Margin Medicaid',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'o2', label:'Op. Margin Medicare',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'o3', label:'Op. Margin Medicare Adv',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+    {key:'o4', label:'Op. Margin Commercial',search:false,fmt:function(v){return v!=null?(v*100).toFixed(1)+'%':'';}},
+];
+var tblPage=0,tblPerPage=25,tblSortCol=null,tblSortDir='asc',tblFiltered=[],tblSearches={};
+
+function tblInit(){
+    var hdr=document.getElementById('tbl-hdr');
+    var srch=document.getElementById('tbl-search');
+    hdr.innerHTML='';srch.innerHTML='';
+    TBL_COLS.forEach(function(col,ci){
+        var th=document.createElement('th');
+        th.innerHTML=col.label+'<span class="sa"></span>';
+        th.onclick=function(){tblSort(ci);};
+        hdr.appendChild(th);
+        var th2=document.createElement('th');
+        th2.style.background='#1a3066';
+        if(col.search){
+            var inp=document.createElement('input');
+            inp.type='text';inp.placeholder='Search...';
+            inp.oninput=function(){tblSearches[col.key]=inp.value.toLowerCase();tblPage=0;tblApply();};
+            th2.appendChild(inp);
+        }
+        srch.appendChild(th2);
+    });
+}
+
+function tblSort(ci){
+    if(tblSortCol===ci){tblSortDir=tblSortDir==='asc'?'desc':'asc';}
+    else{tblSortCol=ci;tblSortDir='asc';}
+    /* Update header classes */
+    var ths=document.getElementById('tbl-hdr').children;
+    for(var i=0;i<ths.length;i++){ths[i].className=(i===ci?tblSortDir:'');}
+    tblApply();
+}
+
+function tblApply(){
+    /* Filter by search fields */
+    tblFiltered=F.filter(function(d){
+        for(var key in tblSearches){
+            var q=tblSearches[key];
+            if(!q)continue;
+            var val=d[key];
+            if(val==null)val='';
+            if(key==='sy'&&(val===null||val===''))val='Independent';
+            if(String(val).toLowerCase().indexOf(q)<0)return false;
+        }
+        return true;
+    });
+    /* Sort */
+    if(tblSortCol!==null){
+        var col=TBL_COLS[tblSortCol];
+        var k=col.key;
+        var dir=tblSortDir==='asc'?1:-1;
+        tblFiltered.sort(function(a,b){
+            var va=a[k],vb=b[k];
+            if(va==null&&vb==null)return 0;
+            if(va==null)return 1;
+            if(vb==null)return -1;
+            if(typeof va==='string')return va.localeCompare(vb)*dir;
+            return (va-vb)*dir;
+        });
+    }
+    tblRender();
+}
+
+function tblRender(){
+    var body=document.getElementById('tbl-body');
+    body.innerHTML='';
+    var total=tblFiltered.length;
+    var start=tblPage*tblPerPage;
+    var end=Math.min(start+tblPerPage,total);
+    var maxPage=Math.max(0,Math.ceil(total/tblPerPage)-1);
+    if(tblPage>maxPage){tblPage=maxPage;start=tblPage*tblPerPage;end=Math.min(start+tblPerPage,total);}
+    for(var i=start;i<end;i++){
+        var d=tblFiltered[i];
+        var tr=document.createElement('tr');
+        TBL_COLS.forEach(function(col){
+            var td=document.createElement('td');
+            td.textContent=col.fmt(d[col.key]);
+            tr.appendChild(td);
+        });
+        body.appendChild(tr);
+    }
+    document.getElementById('tbl-n').textContent=total+' hospitals';
+    document.getElementById('pg-info').textContent=(total?start+1:0)+'–'+end+' of '+total;
+    document.getElementById('pg-prev').disabled=(tblPage<=0);
+    document.getElementById('pg-next').disabled=(tblPage>=maxPage);
+}
+
+function tblPg(dir){
+    tblPage+=dir;
+    if(tblPage<0)tblPage=0;
+    tblRender();
+    document.getElementById('tbl-scroll').scrollTop=0;
+}
+
+function tblUpdate(){
+    tblPage=0;
+    tblApply();
+}
+
+/* ---- Init ---- */
+try {
+    D=parseData();
+    document.getElementById('loading').style.display='none';
+    var sts=[].concat(Array.from(new Set(D.map(function(d){return d.s;})))).sort();
+    var msas=[].concat(Array.from(new Set(D.map(function(d){return d.m;}).filter(Boolean)))).sort();
+    var sys=[].concat(Array.from(new Set(D.map(function(d){return d.sy;}).filter(Boolean)))).sort();
+    /* Build House district option list: keys like "TX-1" sorted by state then district number */
+    var hdSet=new Set();
+    D.forEach(function(d){if(d.hd)hdSet.add(d.hd);});
+    var hds=[].concat(Array.from(hdSet)).sort(function(a,b){
+        var pa=a.split('-'),pb=b.split('-');
+        if(pa[0]!==pb[0])return pa[0]<pb[0]?-1:1;
+        return parseInt(pa[1])-parseInt(pb[1]);
+    });
+    /* House label function: "TX-1" -> "TX-1: N. Moran" */
+    function hdLabel(v){return HOUSE&&HOUSE[v]?v+': '+HOUSE[v]:v;}
+    /* Senate option list: keys like "TX:J. Cornyn" sorted by state */
+    var snSet=new Set();
+    D.forEach(function(d){if(SENATE&&SENATE[d.s])SENATE[d.s].forEach(function(sn){snSet.add(d.s+':'+sn);});});
+    var sns=[].concat(Array.from(snSet)).sort();
+    /* Senate label function: "TX:J. Cornyn" -> "TX — J. Cornyn" */
+    function snLabel(v){var p=v.split(':');return p[0]+' — '+p[1];}
+
+    /* Default: only TX selected */
+    function stateChanged(){cascadeFilters();go();}
+    msSt=ms('ms-st',sts,'All States',stateChanged,new Set(['TX']));
+    msMsa=ms('ms-ms',msas,'All Metros',go);
+    msUr=ms('ms-ur',['Urban','Suburban','Rural'],'All',go);
+    msSy=ms('ms-sy',sys,'All Systems',go);
+    msHd=ms('ms-hd',hds,'All Districts',go,null,hdLabel);
+    msSn=ms('ms-sn',sns,'All Senators',go,null,snLabel);
+    /* Build State House district option list */
+    var shSet=new Set();
+    D.forEach(function(d){if(d.sh)shSet.add(d.sh);});
+    var shArr=[].concat(Array.from(shSet)).sort(function(a,b){
+        var pa=a.split('-'),pb=b.split('-');
+        if(pa[0]!==pb[0])return pa[0]<pb[0]?-1:1;
+        return parseInt(pa[1])-parseInt(pb[1]);
+    });
+    function shLabel(v){return ST_HOUSE&&ST_HOUSE[v]?v+': '+ST_HOUSE[v]:v;}
+    msSh=ms('ms-sh',shArr,'All Districts',go,null,shLabel);
+    /* Build State Senate district option list */
+    var ssSet=new Set();
+    D.forEach(function(d){if(d.ss)ssSet.add(d.ss);});
+    var ssArr=[].concat(Array.from(ssSet)).sort(function(a,b){
+        var pa=a.split('-'),pb=b.split('-');
+        if(pa[0]!==pb[0])return pa[0]<pb[0]?-1:1;
+        return parseInt(pa[1])-parseInt(pb[1]);
+    });
+    function ssLabel(v){return ST_SEN&&ST_SEN[v]?v+': '+ST_SEN[v]:v;}
+    msSs=ms('ms-ss',ssArr,'All Districts',go,null,ssLabel);
+    tblInit();
+    cascadeFilters(); /* initial cascade for TX-only default */
+    go();
+    setTimeout(function(){
+        var vs=[].concat(
+            F.filter(function(d){return d.cb!=null;}).map(function(d){return d.cb;}),
+            F.filter(function(d){return d.r5!=null;}).map(function(d){return d.r5;})
+        ).filter(function(v){return v<20;});
+        if(vs.length){var mx=Math.min(Math.ceil(Math.max.apply(null,vs)*1.1),10);document.getElementById('z2hi').value=mx;zm2();}
+    },200);
+} catch(e) {
+    document.getElementById('loading').textContent='Error: '+e.message;
+    console.error(e);
+}
+</script>
+</body>
+</html>
