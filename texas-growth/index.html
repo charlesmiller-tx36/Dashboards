@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Texas Growth Story — GDP Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<style>
+:root {
+    --bg: #0a0e17;
+    --bg-card: #131a2b;
+    --bg-card-hover: #1a2340;
+    --border: #1e2d4a;
+    --tx-gold: #f4a926;
+    --tx-gold-dim: rgba(244,169,38,0.15);
+    --tx-red: #bf1e2e;
+    --accent-blue: #4a90d9;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+    --text: #e8edf5;
+    --text-dim: #8899b3;
+    --text-bright: #ffffff;
+    --gap: 16px;
+    --radius: 10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+.dashboard {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 20px;
+}
+/* HEADER */
+.header {
+    background: linear-gradient(135deg, #1a2744 0%, #0f1a2e 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: var(--gap);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.header-left h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+}
+.header-left h1 span { color: var(--tx-gold); }
+.header-left .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.header-right .badge {
+    background: var(--tx-gold-dim);
+    color: var(--tx-gold);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(244,169,38,0.3);
+}
+/* KPI ROW */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+.kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--tx-gold);
+}
+.kpi-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+.kpi-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+}
+.kpi-sub {
+    font-size: 12px;
+    font-weight: 500;
+}
+.kpi-sub.positive { color: var(--accent-green); }
+.kpi-sub.negative { color: var(--accent-red); }
+.kpi-sub.neutral { color: var(--text-dim); }
+/* CHART GRID */
+.chart-grid {
+    display: grid;
+    gap: var(--gap);
+}
+.chart-grid.two-col {
+    grid-template-columns: 1fr 1fr;
+}
+.chart-grid.full {
+    grid-template-columns: 1fr;
+}
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+}
+.chart-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+}
+.chart-card .chart-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+}
+.chart-wrap {
+    position: relative;
+    height: 340px;
+}
+.chart-wrap.tall {
+    height: 440px;
+}
+.chart-wrap.race {
+    height: 420px;
+}
+/* BAR RACE CONTROLS */
+.race-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.race-controls button {
+    background: var(--tx-gold);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.race-controls button:hover { opacity: 0.85; }
+.race-controls .year-display {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--tx-gold);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+}
+.race-controls input[type="range"] {
+    flex: 1;
+    accent-color: var(--tx-gold);
+}
+/* REDISTRIBUTION CHART */
+.redistribution {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+}
+.redistribution .bar-group {
+    flex: 1;
+}
+.redistribution .bar-group h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    color: var(--text-dim);
+}
+.redist-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+.redist-bar .label {
+    width: 100px;
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+}
+.redist-bar .bar {
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    min-width: 40px;
+    transition: width 0.6s ease;
+}
+.redist-bar .bar.gain { background: var(--accent-green); }
+.redist-bar .bar.loss { background: var(--accent-red); }
+/* FOOTER */
+.footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: var(--gap);
+}
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid.two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    .kpi-row { grid-template-columns: 1fr; }
+    .header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <h1>The <span>Texas</span> Growth Story</h1>
+        <div class="subtitle">GDP growth from 2000 to 2024 &mdash; Source: U.S. Bureau of Economic Analysis, SAGDP1</div>
+    </div>
+    <div class="header-right">
+        <span class="badge">2000 &rarr; 2024</span>
+    </div>
+</div>
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+    <div class="kpi-card">
+        <div class="kpi-label">Texas GDP (2024)</div>
+        <div class="kpi-value" id="kpi-gdp"></div>
+        <div class="kpi-sub neutral" id="kpi-gdp-sub"></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Share of U.S. GDP</div>
+        <div class="kpi-value" id="kpi-share"></div>
+        <div class="kpi-sub positive" id="kpi-share-sub"></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">National Rank</div>
+        <div class="kpi-value">#2</div>
+        <div class="kpi-sub positive">Overtook New York (~2012)</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">24-Year CAGR</div>
+        <div class="kpi-value" id="kpi-cagr"></div>
+        <div class="kpi-sub positive" id="kpi-cagr-sub"></div>
+    </div>
+</div>
+
+<!-- ROW 1: BAR CHART RACE (full width) -->
+<div class="chart-grid full" style="margin-bottom:var(--gap)">
+    <div class="chart-card">
+        <h3>The Climb to #2 &mdash; Top 10 States by GDP</h3>
+        <div class="chart-subtitle">Watch Texas overtake New York and pull away from the pack</div>
+        <div class="race-controls">
+            <button id="race-btn" onclick="toggleRace()">&#9654; Play</button>
+            <input type="range" id="race-slider" min="2000" max="2024" step="1" value="2000" oninput="seekRace(this.value)">
+            <div class="year-display" id="race-year">2000</div>
+        </div>
+        <div class="chart-wrap race">
+            <canvas id="chart-race"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ROW 2: Line chart + Share area chart -->
+<div class="chart-grid two-col" style="margin-bottom:var(--gap)">
+    <div class="chart-card">
+        <h3>Texas vs. Peer States</h3>
+        <div class="chart-subtitle">Nominal GDP, 2000&ndash;2024 (millions $)</div>
+        <div class="chart-wrap">
+            <canvas id="chart-peers"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3>Texas Share of U.S. GDP</h3>
+        <div class="chart-subtitle">Percentage of national GDP, with Illinois for contrast</div>
+        <div class="chart-wrap">
+            <canvas id="chart-share"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ROW 3: Scatter + Redistribution -->
+<div class="chart-grid two-col" style="margin-bottom:var(--gap)">
+    <div class="chart-card">
+        <h3>GDP Size vs. Share Change</h3>
+        <div class="chart-subtitle">X: 2024 GDP &middot; Y: Change in national share (pp) since 2000</div>
+        <div class="chart-wrap">
+            <canvas id="chart-scatter"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3>Who Gained, Who Lost?</h3>
+        <div class="chart-subtitle">Biggest shifts in national GDP share, 2000&ndash;2024 (percentage points)</div>
+        <div id="redistribution" style="padding-top:12px;"></div>
+    </div>
+</div>
+
+<!-- ROW 4: Acceleration bar chart (full width) -->
+<div class="chart-grid full" style="margin-bottom:var(--gap)">
+    <div class="chart-card">
+        <h3>Texas Growth Acceleration</h3>
+        <div class="chart-subtitle">Year-over-year GDP growth ($ millions) &mdash; Texas vs. average state</div>
+        <div class="chart-wrap tall">
+            <canvas id="chart-accel"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Data: U.S. Bureau of Economic Analysis, SAGDP1 (accessed Feb 23, 2026) &middot; Current-dollar GDP in millions
+</div>
+
+</div>
+
+<script>
+const D = {"years": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "us": {"2000": 10250952.0, "2001": 10581929.0, "2002": 10929108.0, "2003": 11456450.0, "2004": 12217196.0, "2005": 13039197.0, "2006": 13815583.0, "2007": 14474228.0, "2008": 14769862.0, "2009": 14478067.0, "2010": 15048971.0, "2011": 15599732.0, "2012": 16253970.0, "2013": 16880683.0, "2014": 17608138.0, "2015": 18295019.0, "2016": 18804913.0, "2017": 19612102.0, "2018": 20656516.0, "2019": 21539982.0, "2020": 21375281.0, "2021": 23725645.0, "2022": 26054614.0, "2023": 27811517.0, "2024": 29298013.0}, "peers": {"Texas": {"2000": 742161.5, "2001": 780206.2, "2002": 796357.3, "2003": 840860.8, "2004": 921230.7, "2005": 1003745.9, "2006": 1108236.5, "2007": 1198565.0, "2008": 1253142.0, "2009": 1179168.1, "2010": 1255660.8, "2011": 1351776.9, "2012": 1429588.0, "2013": 1526781.9, "2014": 1592177.6, "2015": 1585985.9, "2016": 1582981.5, "2017": 1667313.0, "2018": 1808026.9, "2019": 1864872.3, "2020": 1810670.2, "2021": 2117013.7, "2022": 2476903.2, "2023": 2637237.6, "2024": 2769766.2}, "California": {"2000": 1354791.3, "2001": 1373270.8, "2002": 1419321.8, "2003": 1498578.0, "2004": 1585081.4, "2005": 1698858.4, "2006": 1812161.6, "2007": 1900220.4, "2008": 1946241.5, "2009": 1879809.5, "2010": 1938603.3, "2011": 2014050.3, "2012": 2108873.1, "2013": 2223300.9, "2014": 2342218.8, "2015": 2487156.4, "2016": 2586485.2, "2017": 2740550.3, "2018": 2899530.9, "2019": 3068629.7, "2020": 3072927.6, "2021": 3418256.1, "2022": 3618289.7, "2023": 3827007.3, "2024": 4048108.1}, "New York": {"2000": 839853.0, "2001": 876285.2, "2002": 885386.2, "2003": 908535.2, "2004": 958565.3, "2005": 1009851.0, "2006": 1072271.8, "2007": 1116265.3, "2008": 1107860.2, "2009": 1155492.3, "2010": 1217748.0, "2011": 1245769.4, "2012": 1324471.3, "2013": 1364632.9, "2014": 1434606.3, "2015": 1498474.7, "2016": 1556830.0, "2017": 1624800.7, "2018": 1710665.6, "2019": 1787470.9, "2020": 1782502.4, "2021": 1934524.0, "2022": 2071075.2, "2023": 2182549.0, "2024": 2322138.9}, "Florida": {"2000": 490094.4, "2001": 519140.7, "2002": 553359.9, "2003": 590284.8, "2004": 647041.8, "2005": 704890.3, "2006": 749925.0, "2007": 781947.3, "2008": 767357.8, "2009": 739322.4, "2010": 752998.4, "2011": 761043.1, "2012": 784545.9, "2013": 819679.8, "2014": 860112.6, "2015": 918464.3, "2016": 964500.8, "2017": 1014866.9, "2018": 1072085.6, "2019": 1133718.0, "2020": 1144653.2, "2021": 1300807.8, "2022": 1473688.1, "2023": 1624642.3, "2024": 1726709.9}, "Illinois": {"2000": 486089.7, "2001": 499618.4, "2002": 511485.9, "2003": 528577.0, "2004": 560079.8, "2005": 589153.7, "2006": 624068.1, "2007": 649307.4, "2008": 649677.3, "2009": 645843.2, "2010": 663929.0, "2011": 691805.5, "2012": 725478.0, "2013": 742890.9, "2014": 772291.7, "2015": 802592.0, "2016": 813561.6, "2017": 832826.8, "2018": 871024.2, "2019": 895601.8, "2020": 860807.8, "2021": 947223.9, "2022": 1037735.9, "2023": 1100794.1, "2024": 1148106.1}}, "top10_by_year": {"2000": [{"state": "California", "gdp": 1354791.3}, {"state": "New York", "gdp": 839853.0}, {"state": "Texas", "gdp": 742161.5}, {"state": "Florida", "gdp": 490094.4}, {"state": "Illinois", "gdp": 486089.7}, {"state": "Pennsylvania", "gdp": 409330.2}, {"state": "Ohio", "gdp": 391032.3}, {"state": "New Jersey", "gdp": 360530.4}, {"state": "Michigan", "gdp": 351879.5}, {"state": "Georgia", "gdp": 305323.7}], "2001": [{"state": "California", "gdp": 1373270.8}, {"state": "New York", "gdp": 876285.2}, {"state": "Texas", "gdp": 780206.2}, {"state": "Florida", "gdp": 519140.7}, {"state": "Illinois", "gdp": 499618.4}, {"state": "Pennsylvania", "gdp": 428463.7}, {"state": "Ohio", "gdp": 395864.2}, {"state": "New Jersey", "gdp": 372819.2}, {"state": "Michigan", "gdp": 349127.5}, {"state": "Georgia", "gdp": 316872.7}], "2002": [{"state": "California", "gdp": 1419321.8}, {"state": "New York", "gdp": 885386.2}, {"state": "Texas", "gdp": 796357.3}, {"state": "Florida", "gdp": 553359.9}, {"state": "Illinois", "gdp": 511485.9}, {"state": "Pennsylvania", "gdp": 440887.5}, {"state": "Ohio", "gdp": 411191.1}, {"state": "New Jersey", "gdp": 385045.6}, {"state": "Michigan", "gdp": 363372.1}, {"state": "Georgia", "gdp": 326017.9}], "2003": [{"state": "California", "gdp": 1498578.0}, {"state": "New York", "gdp": 908535.2}, {"state": "Texas", "gdp": 840860.8}, {"state": "Florida", "gdp": 590284.8}, {"state": "Illinois", "gdp": 528577.0}, {"state": "Pennsylvania", "gdp": 460478.3}, {"state": "Ohio", "gdp": 425530.7}, {"state": "New Jersey", "gdp": 399996.5}, {"state": "Michigan", "gdp": 376123.8}, {"state": "Georgia", "gdp": 339540.5}], "2004": [{"state": "California", "gdp": 1585081.4}, {"state": "New York", "gdp": 958565.3}, {"state": "Texas", "gdp": 921230.7}, {"state": "Florida", "gdp": 647041.8}, {"state": "Illinois", "gdp": 560079.8}, {"state": "Pennsylvania", "gdp": 486384.5}, {"state": "Ohio", "gdp": 447813.3}, {"state": "New Jersey", "gdp": 415490.8}, {"state": "Michigan", "gdp": 388764.6}, {"state": "Georgia", "gdp": 364530.1}], "2005": [{"state": "California", "gdp": 1698858.4}, {"state": "New York", "gdp": 1009851.0}, {"state": "Texas", "gdp": 1003745.9}, {"state": "Florida", "gdp": 704890.3}, {"state": "Illinois", "gdp": 589153.7}, {"state": "Pennsylvania", "gdp": 510763.9}, {"state": "Ohio", "gdp": 470179.5}, {"state": "New Jersey", "gdp": 436064.4}, {"state": "Michigan", "gdp": 402828.8}, {"state": "Georgia", "gdp": 388707.2}], "2006": [{"state": "California", "gdp": 1812161.6}, {"state": "Texas", "gdp": 1108236.5}, {"state": "New York", "gdp": 1072271.8}, {"state": "Florida", "gdp": 749925.0}, {"state": "Illinois", "gdp": 624068.1}, {"state": "Pennsylvania", "gdp": 528771.2}, {"state": "Ohio", "gdp": 482904.0}, {"state": "New Jersey", "gdp": 457681.5}, {"state": "Georgia", "gdp": 405664.2}, {"state": "Michigan", "gdp": 402537.3}], "2007": [{"state": "California", "gdp": 1900220.4}, {"state": "Texas", "gdp": 1198565.0}, {"state": "New York", "gdp": 1116265.3}, {"state": "Florida", "gdp": 781947.3}, {"state": "Illinois", "gdp": 649307.4}, {"state": "Pennsylvania", "gdp": 563238.6}, {"state": "Ohio", "gdp": 497600.1}, {"state": "New Jersey", "gdp": 474539.6}, {"state": "Georgia", "gdp": 419384.8}, {"state": "Michigan", "gdp": 410613.0}], "2008": [{"state": "California", "gdp": 1946241.5}, {"state": "Texas", "gdp": 1253142.0}, {"state": "New York", "gdp": 1107860.2}, {"state": "Florida", "gdp": 767357.8}, {"state": "Illinois", "gdp": 649677.3}, {"state": "Pennsylvania", "gdp": 586886.6}, {"state": "Ohio", "gdp": 500916.4}, {"state": "New Jersey", "gdp": 493289.4}, {"state": "North Carolina", "gdp": 420707.2}, {"state": "Georgia", "gdp": 416303.5}], "2009": [{"state": "California", "gdp": 1879809.5}, {"state": "Texas", "gdp": 1179168.1}, {"state": "New York", "gdp": 1155492.3}, {"state": "Florida", "gdp": 739322.4}, {"state": "Illinois", "gdp": 645843.2}, {"state": "Pennsylvania", "gdp": 581219.9}, {"state": "Ohio", "gdp": 484407.1}, {"state": "New Jersey", "gdp": 481452.7}, {"state": "North Carolina", "gdp": 413096.8}, {"state": "Virginia", "gdp": 409935.3}], "2010": [{"state": "California", "gdp": 1938603.3}, {"state": "Texas", "gdp": 1255660.8}, {"state": "New York", "gdp": 1217748.0}, {"state": "Florida", "gdp": 752998.4}, {"state": "Illinois", "gdp": 663929.0}, {"state": "Pennsylvania", "gdp": 604629.6}, {"state": "Ohio", "gdp": 500274.2}, {"state": "New Jersey", "gdp": 491229.0}, {"state": "Virginia", "gdp": 425490.8}, {"state": "North Carolina", "gdp": 422282.2}], "2011": [{"state": "California", "gdp": 2014050.3}, {"state": "Texas", "gdp": 1351776.9}, {"state": "New York", "gdp": 1245769.4}, {"state": "Florida", "gdp": 761043.1}, {"state": "Illinois", "gdp": 691805.5}, {"state": "Pennsylvania", "gdp": 623767.9}, {"state": "Ohio", "gdp": 525456.4}, {"state": "New Jersey", "gdp": 494292.8}, {"state": "Virginia", "gdp": 433683.7}, {"state": "Georgia", "gdp": 433137.1}], "2012": [{"state": "California", "gdp": 2108873.1}, {"state": "Texas", "gdp": 1429588.0}, {"state": "New York", "gdp": 1324471.3}, {"state": "Florida", "gdp": 784545.9}, {"state": "Illinois", "gdp": 725478.0}, {"state": "Pennsylvania", "gdp": 646434.3}, {"state": "Ohio", "gdp": 543035.4}, {"state": "New Jersey", "gdp": 516098.2}, {"state": "Georgia", "gdp": 449375.6}, {"state": "Virginia", "gdp": 445008.5}], "2013": [{"state": "California", "gdp": 2223300.9}, {"state": "Texas", "gdp": 1526781.9}, {"state": "New York", "gdp": 1364632.9}, {"state": "Florida", "gdp": 819679.8}, {"state": "Illinois", "gdp": 742890.9}, {"state": "Pennsylvania", "gdp": 670767.4}, {"state": "Ohio", "gdp": 566419.9}, {"state": "New Jersey", "gdp": 534212.1}, {"state": "Georgia", "gdp": 467559.5}, {"state": "North Carolina", "gdp": 460946.4}], "2014": [{"state": "California", "gdp": 2342218.8}, {"state": "Texas", "gdp": 1592177.6}, {"state": "New York", "gdp": 1434606.3}, {"state": "Florida", "gdp": 860112.6}, {"state": "Illinois", "gdp": 772291.7}, {"state": "Pennsylvania", "gdp": 695546.6}, {"state": "Ohio", "gdp": 597152.3}, {"state": "New Jersey", "gdp": 543824.1}, {"state": "Georgia", "gdp": 493370.3}, {"state": "North Carolina", "gdp": 482295.7}], "2015": [{"state": "California", "gdp": 2487156.4}, {"state": "Texas", "gdp": 1585985.9}, {"state": "New York", "gdp": 1498474.7}, {"state": "Florida", "gdp": 918464.3}, {"state": "Illinois", "gdp": 802592.0}, {"state": "Pennsylvania", "gdp": 716534.3}, {"state": "Ohio", "gdp": 615275.5}, {"state": "New Jersey", "gdp": 565807.7}, {"state": "Georgia", "gdp": 525516.8}, {"state": "North Carolina", "gdp": 508672.4}], "2016": [{"state": "California", "gdp": 2586485.2}, {"state": "Texas", "gdp": 1582981.5}, {"state": "New York", "gdp": 1556830.0}, {"state": "Florida", "gdp": 964500.8}, {"state": "Illinois", "gdp": 813561.6}, {"state": "Pennsylvania", "gdp": 733165.9}, {"state": "Ohio", "gdp": 627294.7}, {"state": "New Jersey", "gdp": 578651.4}, {"state": "Georgia", "gdp": 554903.2}, {"state": "North Carolina", "gdp": 528284.3}], "2017": [{"state": "California", "gdp": 2740550.3}, {"state": "Texas", "gdp": 1667313.0}, {"state": "New York", "gdp": 1624800.7}, {"state": "Florida", "gdp": 1014866.9}, {"state": "Illinois", "gdp": 832826.8}, {"state": "Pennsylvania", "gdp": 754318.0}, {"state": "Ohio", "gdp": 652187.5}, {"state": "New Jersey", "gdp": 590086.7}, {"state": "Georgia", "gdp": 583543.3}, {"state": "North Carolina", "gdp": 546810.1}], "2018": [{"state": "California", "gdp": 2899530.9}, {"state": "Texas", "gdp": 1808026.9}, {"state": "New York", "gdp": 1710665.6}, {"state": "Florida", "gdp": 1072085.6}, {"state": "Illinois", "gdp": 871024.2}, {"state": "Pennsylvania", "gdp": 780620.7}, {"state": "Ohio", "gdp": 672540.1}, {"state": "New Jersey", "gdp": 619340.2}, {"state": "Georgia", "gdp": 612803.4}, {"state": "Washington", "gdp": 570337.8}], "2019": [{"state": "California", "gdp": 3068629.7}, {"state": "Texas", "gdp": 1864872.3}, {"state": "New York", "gdp": 1787470.9}, {"state": "Florida", "gdp": 1133718.0}, {"state": "Illinois", "gdp": 895601.8}, {"state": "Pennsylvania", "gdp": 802233.1}, {"state": "Ohio", "gdp": 702914.8}, {"state": "Georgia", "gdp": 646695.8}, {"state": "New Jersey", "gdp": 643317.7}, {"state": "Washington", "gdp": 608643.4}], "2020": [{"state": "California", "gdp": 3072927.6}, {"state": "Texas", "gdp": 1810670.2}, {"state": "New York", "gdp": 1782502.4}, {"state": "Florida", "gdp": 1144653.2}, {"state": "Illinois", "gdp": 860807.8}, {"state": "Pennsylvania", "gdp": 778297.2}, {"state": "Ohio", "gdp": 692938.3}, {"state": "Georgia", "gdp": 638488.3}, {"state": "New Jersey", "gdp": 632562.3}, {"state": "Washington", "gdp": 617739.1}], "2021": [{"state": "California", "gdp": 3418256.1}, {"state": "Texas", "gdp": 2117013.7}, {"state": "New York", "gdp": 1934524.0}, {"state": "Florida", "gdp": 1300807.8}, {"state": "Illinois", "gdp": 947223.9}, {"state": "Pennsylvania", "gdp": 844875.5}, {"state": "Ohio", "gdp": 764161.4}, {"state": "Georgia", "gdp": 706004.6}, {"state": "New Jersey", "gdp": 693733.8}, {"state": "Washington", "gdp": 683367.0}], "2022": [{"state": "California", "gdp": 3618289.7}, {"state": "Texas", "gdp": 2476903.2}, {"state": "New York", "gdp": 2071075.2}, {"state": "Florida", "gdp": 1473688.1}, {"state": "Illinois", "gdp": 1037735.9}, {"state": "Pennsylvania", "gdp": 916861.7}, {"state": "Ohio", "gdp": 830498.8}, {"state": "Georgia", "gdp": 785922.7}, {"state": "New Jersey", "gdp": 756465.6}, {"state": "Washington", "gdp": 741002.8}], "2023": [{"state": "California", "gdp": 3827007.3}, {"state": "Texas", "gdp": 2637237.6}, {"state": "New York", "gdp": 2182549.0}, {"state": "Florida", "gdp": 1624642.3}, {"state": "Illinois", "gdp": 1100794.1}, {"state": "Pennsylvania", "gdp": 966444.0}, {"state": "Ohio", "gdp": 883957.1}, {"state": "Georgia", "gdp": 835755.3}, {"state": "New Jersey", "gdp": 806894.0}, {"state": "Washington", "gdp": 801455.5}], "2024": [{"state": "California", "gdp": 4048108.1}, {"state": "Texas", "gdp": 2769766.2}, {"state": "New York", "gdp": 2322138.9}, {"state": "Florida", "gdp": 1726709.9}, {"state": "Illinois", "gdp": 1148106.1}, {"state": "Pennsylvania", "gdp": 1007873.9}, {"state": "Ohio", "gdp": 923140.6}, {"state": "Georgia", "gdp": 881508.2}, {"state": "Washington", "gdp": 856013.6}, {"state": "New Jersey", "gdp": 846000.4}]}, "tx_share": {"2000": 7.24, "2001": 7.37, "2002": 7.29, "2003": 7.34, "2004": 7.54, "2005": 7.7, "2006": 8.02, "2007": 8.28, "2008": 8.48, "2009": 8.14, "2010": 8.34, "2011": 8.67, "2012": 8.8, "2013": 9.04, "2014": 9.04, "2015": 8.67, "2016": 8.42, "2017": 8.5, "2018": 8.75, "2019": 8.66, "2020": 8.47, "2021": 8.92, "2022": 9.51, "2023": 9.48, "2024": 9.45}, "il_share": {"2000": 4.74, "2001": 4.72, "2002": 4.68, "2003": 4.61, "2004": 4.58, "2005": 4.52, "2006": 4.52, "2007": 4.49, "2008": 4.4, "2009": 4.46, "2010": 4.41, "2011": 4.43, "2012": 4.46, "2013": 4.4, "2014": 4.39, "2015": 4.39, "2016": 4.33, "2017": 4.25, "2018": 4.22, "2019": 4.16, "2020": 4.03, "2021": 3.99, "2022": 3.98, "2023": 3.96, "2024": 3.92}, "scatter": [{"state": "Alabama", "gdp_2024": 325345.1, "share_change": -0.065}, {"state": "Alaska", "gdp_2024": 71567.2, "share_change": -0.018}, {"state": "Arizona", "gdp_2024": 570088.6, "share_change": 0.329}, {"state": "Arkansas", "gdp_2024": 188339.6, "share_change": -0.032}, {"state": "California", "gdp_2024": 4048108.1, "share_change": 0.601}, {"state": "Colorado", "gdp_2024": 557633.0, "share_change": 0.154}, {"state": "Connecticut", "gdp_2024": 356834.9, "share_change": -0.397}, {"state": "Delaware", "gdp_2024": 110971.8, "share_change": -0.046}, {"state": "Florida", "gdp_2024": 1726709.9, "share_change": 1.113}, {"state": "Georgia", "gdp_2024": 881508.2, "share_change": 0.03}, {"state": "Hawaii", "gdp_2024": 117627.4, "share_change": 0.001}, {"state": "Idaho", "gdp_2024": 129018.2, "share_change": 0.066}, {"state": "Illinois", "gdp_2024": 1148106.1, "share_change": -0.823}, {"state": "Indiana", "gdp_2024": 519516.5, "share_change": -0.218}, {"state": "Iowa", "gdp_2024": 265794.5, "share_change": -0.001}, {"state": "Kansas", "gdp_2024": 230522.1, "share_change": -0.052}, {"state": "Kentucky", "gdp_2024": 295375.3, "share_change": -0.109}, {"state": "Louisiana", "gdp_2024": 329172.8, "share_change": -0.168}, {"state": "Maine", "gdp_2024": 99174.1, "share_change": -0.025}, {"state": "Maryland", "gdp_2024": 546028.4, "share_change": -0.004}, {"state": "Massachusetts", "gdp_2024": 778523.4, "share_change": -0.143}, {"state": "Michigan", "gdp_2024": 702466.9, "share_change": -1.035}, {"state": "Minnesota", "gdp_2024": 507687.8, "share_change": -0.144}, {"state": "Mississippi", "gdp_2024": 158192.4, "share_change": -0.104}, {"state": "Missouri", "gdp_2024": 448713.7, "share_change": -0.293}, {"state": "Montana", "gdp_2024": 78441.0, "share_change": 0.054}, {"state": "Nebraska", "gdp_2024": 189242.7, "share_change": 0.094}, {"state": "Nevada", "gdp_2024": 269010.5, "share_change": 0.165}, {"state": "New Hampshire", "gdp_2024": 119336.6, "share_change": -0.038}, {"state": "New Jersey", "gdp_2024": 846000.4, "share_change": -0.629}, {"state": "New Mexico", "gdp_2024": 147084.9, "share_change": -0.035}, {"state": "New York", "gdp_2024": 2322138.9, "share_change": -0.267}, {"state": "North Carolina", "gdp_2024": 844209.0, "share_change": 0.174}, {"state": "North Dakota", "gdp_2024": 80058.3, "share_change": 0.097}, {"state": "Ohio", "gdp_2024": 923140.6, "share_change": -0.664}, {"state": "Oklahoma", "gdp_2024": 263695.1, "share_change": 0.006}, {"state": "Oregon", "gdp_2024": 330250.1, "share_change": -0.015}, {"state": "Pennsylvania", "gdp_2024": 1007873.9, "share_change": -0.553}, {"state": "Rhode Island", "gdp_2024": 80381.1, "share_change": -0.063}, {"state": "South Carolina", "gdp_2024": 357074.4, "share_change": 0.094}, {"state": "South Dakota", "gdp_2024": 76795.8, "share_change": 0.039}, {"state": "Tennessee", "gdp_2024": 561201.2, "share_change": 0.138}, {"state": "Texas", "gdp_2024": 2769766.2, "share_change": 2.214}, {"state": "Utah", "gdp_2024": 299471.3, "share_change": 0.339}, {"state": "Vermont", "gdp_2024": 46276.1, "share_change": -0.022}, {"state": "Virginia", "gdp_2024": 761733.8, "share_change": -0.02}, {"state": "Washington", "gdp_2024": 856013.6, "share_change": 0.604}, {"state": "West Virginia", "gdp_2024": 106475.1, "share_change": -0.052}, {"state": "Wisconsin", "gdp_2024": 453298.6, "share_change": -0.217}, {"state": "Wyoming", "gdp_2024": 51498.1, "share_change": 0.008}], "tx_yoy": {"2001": 38044.7, "2002": 16151.1, "2003": 44503.5, "2004": 80369.9, "2005": 82515.2, "2006": 104490.6, "2007": 90328.5, "2008": 54577.0, "2009": -73973.9, "2010": 76492.7, "2011": 96116.1, "2012": 77811.1, "2013": 97193.9, "2014": 65395.7, "2015": -6191.7, "2016": -3004.4, "2017": 84331.5, "2018": 140713.9, "2019": 56845.4, "2020": -54202.1, "2021": 306343.5, "2022": 359889.5, "2023": 160334.4, "2024": 132528.6}, "us_yoy_avg": {"2001": 6619.5, "2002": 6943.6, "2003": 10546.8, "2004": 15214.9, "2005": 16440.0, "2006": 15527.7, "2007": 13172.9, "2008": 5912.7, "2009": -5835.9, "2010": 11418.1, "2011": 11015.2, "2012": 13084.8, "2013": 12534.3, "2014": 14549.1, "2015": 13737.6, "2016": 10197.9, "2017": 16143.8, "2018": 20888.3, "2019": 17669.3, "2020": -3294.0, "2021": 47007.3, "2022": 46579.4, "2023": 35138.1, "2024": 29729.9}, "top_gainers": [{"state": "Texas", "change": 2.214}, {"state": "Florida", "change": 1.113}, {"state": "Washington", "change": 0.604}, {"state": "California", "change": 0.601}, {"state": "Utah", "change": 0.339}], "top_losers": [{"state": "Michigan", "change": -1.035}, {"state": "Illinois", "change": -0.823}, {"state": "Ohio", "change": -0.664}, {"state": "New Jersey", "change": -0.629}, {"state": "Pennsylvania", "change": -0.553}], "tx_2024": 2769766.2, "tx_2000": 742161.5, "us_2024": 29298013.0, "us_2000": 10250952.0, "tx_cagr": 0.0564, "us_cagr": 0.0447};
+
+const COLORS = {
+    tx: '#f4a926',
+    txBg: 'rgba(244,169,38,0.15)',
+    ca: '#4a90d9',
+    ny: '#9b59b6',
+    fl: '#27ae60',
+    il: '#e74c3c',
+    gray: '#4a5568',
+    grayDim: '#2d3748',
+    green: '#27ae60',
+    red: '#e74c3c',
+};
+
+const STATE_COLORS = {
+    'Texas': '#f4a926',
+    'California': '#4a90d9',
+    'New York': '#9b59b6',
+    'Florida': '#27ae60',
+    'Illinois': '#e74c3c',
+    'Pennsylvania': '#e67e22',
+    'Ohio': '#1abc9c',
+    'Georgia': '#e84393',
+    'New Jersey': '#00b894',
+    'Washington': '#6c5ce7',
+    'North Carolina': '#fdcb6e',
+    'Massachusetts': '#74b9ff',
+    'Virginia': '#a29bfe',
+    'Michigan': '#fab1a0',
+};
+function stateColor(s) { return STATE_COLORS[s] || '#5a6a8a'; }
+
+// ===== KPIs =====
+document.getElementById('kpi-gdp').textContent = '$' + (D.tx_2024/1e6).toFixed(2) + 'T';
+document.getElementById('kpi-gdp-sub').textContent = 'Up from $' + (D.tx_2000/1e6).toFixed(2) + 'T in 2000 (+' + ((D.tx_2024/D.tx_2000 - 1)*100).toFixed(0) + '%)';
+document.getElementById('kpi-share').textContent = D.tx_share['2024'] + '%';
+document.getElementById('kpi-share-sub').textContent = '+' + (D.tx_share['2024'] - D.tx_share['2000']).toFixed(1) + ' pp since 2000 (' + D.tx_share['2000'] + '%)';
+document.getElementById('kpi-cagr').textContent = (D.tx_cagr*100).toFixed(1) + '%';
+document.getElementById('kpi-cagr-sub').textContent = 'vs. ' + (D.us_cagr*100).toFixed(1) + '% national (+' + ((D.tx_cagr - D.us_cagr)*100).toFixed(1) + ' pp faster)';
+
+// ===== CHART DEFAULTS =====
+Chart.defaults.color = '#8899b3';
+Chart.defaults.borderColor = '#1e2d4a';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+function fmt$(v) {
+    if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'T';
+    if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'B';
+    return '$' + v.toFixed(0) + 'M';
+}
+
+// ===== 1. BAR CHART RACE =====
+let raceChart, raceInterval, raceYear = 2000, racePlaying = false;
+
+function buildRaceData(year) {
+    const d = D.top10_by_year[String(year)];
+    const labels = d.map(x => x.state).reverse();
+    const values = d.map(x => x.gdp).reverse();
+    const colors = labels.map(s => stateColor(s));
+    return { labels, values, colors };
+}
+
+(function initRace() {
+    const rd = buildRaceData(2000);
+    const ctx = document.getElementById('chart-race').getContext('2d');
+    raceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: rd.labels,
+            datasets: [{
+                data: rd.values,
+                backgroundColor: rd.colors,
+                borderColor: rd.colors,
+                borderWidth: 1,
+                borderRadius: 4,
+                barPercentage: 0.75,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 600, easing: 'easeInOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => fmt$(ctx.parsed.x)
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    color: '#e8edf5',
+                    font: { size: 11, weight: '600' },
+                    formatter: v => fmt$(v),
+                    padding: 4,
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: '#1e2d4a' },
+                    ticks: { callback: v => fmt$(v) },
+                    max: 4200000
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { font: { size: 12, weight: '500' } }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+})();
+
+function updateRace(year) {
+    raceYear = year;
+    const rd = buildRaceData(year);
+    raceChart.data.labels = rd.labels;
+    raceChart.data.datasets[0].data = rd.values;
+    raceChart.data.datasets[0].backgroundColor = rd.colors;
+    raceChart.data.datasets[0].borderColor = rd.colors;
+    raceChart.update();
+    document.getElementById('race-year').textContent = year;
+    document.getElementById('race-slider').value = year;
+}
+
+function toggleRace() {
+    if (racePlaying) {
+        clearInterval(raceInterval);
+        racePlaying = false;
+        document.getElementById('race-btn').innerHTML = '&#9654; Play';
+    } else {
+        if (raceYear >= 2024) raceYear = 1999;
+        racePlaying = true;
+        document.getElementById('race-btn').innerHTML = '&#9646;&#9646; Pause';
+        raceInterval = setInterval(() => {
+            raceYear++;
+            if (raceYear > 2024) {
+                clearInterval(raceInterval);
+                racePlaying = false;
+                document.getElementById('race-btn').innerHTML = '&#9654; Replay';
+                return;
+            }
+            updateRace(raceYear);
+        }, 900);
+    }
+}
+
+function seekRace(val) {
+    if (racePlaying) {
+        clearInterval(raceInterval);
+        racePlaying = false;
+        document.getElementById('race-btn').innerHTML = '&#9654; Play';
+    }
+    updateRace(parseInt(val));
+}
+
+// ===== 2. PEER LINE CHART =====
+(function() {
+    const years = D.years;
+    const ctx = document.getElementById('chart-peers').getContext('2d');
+    const peerOrder = ['Texas', 'California', 'New York', 'Florida', 'Illinois'];
+    const peerColors = [COLORS.tx, COLORS.ca, COLORS.ny, COLORS.fl, COLORS.il];
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: peerOrder.map((state, i) => ({
+                label: state,
+                data: years.map(y => D.peers[state][String(y)]),
+                borderColor: peerColors[i],
+                backgroundColor: peerColors[i] + '15',
+                borderWidth: state === 'Texas' ? 3.5 : 2,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.3,
+                fill: false,
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt$(ctx.parsed.y) } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, ticks: { callback: v => fmt$(v) } }
+            }
+        }
+    });
+})();
+
+// ===== 3. SHARE AREA CHART =====
+(function() {
+    const years = D.years;
+    const ctx = document.getElementById('chart-share').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Texas',
+                    data: years.map(y => D.tx_share[String(y)]),
+                    borderColor: COLORS.tx,
+                    backgroundColor: COLORS.tx + '30',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Illinois',
+                    data: years.map(y => D.il_share[String(y)]),
+                    borderColor: COLORS.il,
+                    backgroundColor: COLORS.il + '15',
+                    borderWidth: 2,
+                    borderDash: [5,3],
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    tension: 0.3,
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%' } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    min: 3,
+                    max: 10,
+                    ticks: { callback: v => v.toFixed(0) + '%' }
+                }
+            }
+        }
+    });
+})();
+
+// ===== 4. SCATTER CHART =====
+(function() {
+    const ctx = document.getElementById('chart-scatter').getContext('2d');
+    const txPt = D.scatter.find(x => x.state === 'Texas');
+    const others = D.scatter.filter(x => x.state !== 'Texas');
+
+    new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Other States',
+                    data: others.map(s => ({ x: s.gdp_2024/1e6, y: s.share_change, state: s.state })),
+                    backgroundColor: others.map(s => s.share_change >= 0 ? '#4a90d9' + '99' : '#e74c3c' + '99'),
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                },
+                {
+                    label: 'Texas',
+                    data: [{ x: txPt.gdp_2024/1e6, y: txPt.share_change }],
+                    backgroundColor: COLORS.tx,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                    pointRadius: 10,
+                    pointHoverRadius: 13,
+                    pointStyle: 'star',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const d = ctx.raw;
+                            const name = d.state || 'Texas';
+                            return name + ': ' + fmt$(d.x * 1e6) + ', ' + (d.y >= 0 ? '+' : '') + d.y.toFixed(2) + ' pp';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: '2024 GDP', color: '#8899b3' },
+                    ticks: { callback: v => '$' + v.toFixed(1) + 'T' },
+                    grid: { color: '#1e2d4a' }
+                },
+                y: {
+                    title: { display: true, text: 'Change in GDP Share (pp)', color: '#8899b3' },
+                    ticks: { callback: v => (v >= 0 ? '+' : '') + v.toFixed(1) },
+                    grid: { color: '#1e2d4a' }
+                }
+            }
+        }
+    });
+})();
+
+// ===== 5. REDISTRIBUTION BARS =====
+(function() {
+    const container = document.getElementById('redistribution');
+    const maxGain = Math.max(...D.top_gainers.map(g => g.change));
+    const maxLoss = Math.max(...D.top_losers.map(g => Math.abs(g.change)));
+    const maxVal = Math.max(maxGain, maxLoss);
+
+    let html = '<div class="redistribution">';
+    html += '<div class="bar-group"><h4 style="color:' + COLORS.green + '">Top Gainers</h4>';
+    D.top_gainers.forEach(g => {
+        const w = Math.max((g.change / maxVal) * 100, 15);
+        html += '<div class="redist-bar"><span class="label">' + g.state + '</span>';
+        html += '<div class="bar gain" style="width:' + w + '%">+' + g.change.toFixed(2) + ' pp</div></div>';
+    });
+    html += '</div>';
+
+    html += '<div class="bar-group"><h4 style="color:' + COLORS.red + '">Top Losers</h4>';
+    D.top_losers.forEach(g => {
+        const w = Math.max((Math.abs(g.change) / maxVal) * 100, 15);
+        html += '<div class="redist-bar"><span class="label">' + g.state + '</span>';
+        html += '<div class="bar loss" style="width:' + w + '%">' + g.change.toFixed(2) + ' pp</div></div>';
+    });
+    html += '</div></div>';
+    container.innerHTML = html;
+})();
+
+// ===== 6. ACCELERATION BAR CHART =====
+(function() {
+    const years = D.years.slice(1);
+    const ctx = document.getElementById('chart-accel').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Texas YoY Growth',
+                    data: years.map(y => D.tx_yoy[String(y)]),
+                    backgroundColor: years.map(y => D.tx_yoy[String(y)] >= 0 ? COLORS.tx + 'cc' : COLORS.red + '88'),
+                    borderColor: years.map(y => D.tx_yoy[String(y)] >= 0 ? COLORS.tx : COLORS.red),
+                    borderWidth: 1,
+                    borderRadius: 3,
+                    order: 1,
+                },
+                {
+                    label: 'Avg. State Growth',
+                    data: years.map(y => D.us_yoy_avg[String(y)]),
+                    type: 'line',
+                    borderColor: '#8899b3',
+                    borderWidth: 2,
+                    borderDash: [5, 3],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    tension: 0.3,
+                    fill: false,
+                    order: 0,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt$(ctx.parsed.y) } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { ticks: { callback: v => fmt$(v) } }
+            }
+        }
+    });
+})();
+
+</script>
+</body>
+</html>
