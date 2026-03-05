@@ -4,7 +4,7 @@
 
 | Requirement    | Details |
 |----------------|---------|
-| **Author**     | `[YOUR NAME]` — *to be completed by the dashboard author* |
+| **Author**     | Charles Miller
 | **Creation date** | March 2026 |
 | **Purpose**    | Interactive dashboard analyzing Texas ACA individual marketplace enrollment trends (2015–2025), cross-state comparisons, and affordability/pricing dynamics (2015–2026) — with a focus on how federal subsidy policy changes (ARP/IRA enhanced subsidies and their 2026 expiration) affect the share of enrollees with access to zero-premium plans. Intended for internal policy analysis and early-stage exploration at Texas 2036. |
 | **Data sources** | See [Data Sources](#data-sources) section below |
