@@ -271,6 +271,101 @@
             font-size: 0.9rem;
         }
 
+        /* Methodology tab styles */
+        .methodology-section {
+            margin-bottom: 2.5rem;
+        }
+        .methodology-section h3 {
+            color: var(--color-dark-blue);
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--color-primary-coral);
+        }
+        .methodology-section h4 {
+            color: var(--color-text);
+            font-size: 1.05rem;
+            margin: 1.25rem 0 0.5rem 0;
+        }
+        .methodology-section p, .methodology-section li {
+            line-height: 1.7;
+            color: var(--color-text);
+            font-size: 0.95rem;
+        }
+        .methodology-section ul, .methodology-section ol {
+            margin: 0.5rem 0 1rem 1.5rem;
+        }
+        .methodology-section li {
+            margin-bottom: 0.35rem;
+        }
+        .method-formula {
+            background: #f1f3f5;
+            border: 1px solid var(--color-border-light);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+        .method-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0 1.25rem 0;
+            font-size: 0.9rem;
+        }
+        .method-table th, .method-table td {
+            border: 1px solid var(--color-border-light);
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        .method-table th {
+            background: var(--color-dark-blue);
+            color: white;
+            font-weight: 600;
+        }
+        .method-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .method-callout {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .method-callout-blue {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .method-toc {
+            background: var(--color-bg-light);
+            border: 1px solid var(--color-border-light);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .method-toc a {
+            color: var(--color-primary-coral);
+            text-decoration: none;
+        }
+        .method-toc a:hover {
+            text-decoration: underline;
+        }
+        .method-toc ol {
+            margin: 0.5rem 0 0 1.5rem;
+            line-height: 1.8;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+
         .hero-metric {
             background: linear-gradient(135deg, var(--color-primary-coral) 0%, #f08070 100%);
             color: white;
@@ -410,6 +505,7 @@
         <button class="tab-btn active" onclick="switchTab(0, event)">Texas Deep Dive</button>
         <button class="tab-btn" onclick="switchTab(1, event)">State Comparison</button>
         <button class="tab-btn" onclick="switchTab(2, event)">Affordability & Pricing</button>
+        <button class="tab-btn" onclick="switchTab(3, event)">Methodology</button>
     </div>
 
     <!-- TAB 1: TEXAS DEEP DIVE -->
@@ -986,6 +1082,377 @@
         </div>
     </div>
 
+    <!-- TAB 4: METHODOLOGY -->
+    <div id="tab-3" class="tab-panel">
+        <div class="chart-card">
+            <h2 style="color: var(--color-dark-blue); margin-bottom: 0.25rem;">Methodology & Technical Notes</h2>
+            <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">This section documents how each visualization in the dashboard is constructed — including data sources, calculation logic, key assumptions, and known limitations. It is intended to enable replication and to support informed interpretation of the findings.</p>
+
+            <div class="method-toc">
+                <strong>Contents</strong>
+                <ol>
+                    <li><a href="#method-sources">Data Sources & Coverage</a></li>
+                    <li><a href="#method-enrollment">Enrollment Trends (Tabs 1 & 2)</a></li>
+                    <li><a href="#method-pricing">Premium Pricing & Rating Areas (Section A & B)</a></li>
+                    <li><a href="#method-subsidies">Subsidy Calculations & the Three Eras</a></li>
+                    <li><a href="#method-silver">Silver Loading & SB 1296 (Section C)</a></li>
+                    <li><a href="#method-eligibility">$0 Plan Eligibility Model (Section D)</a> — <em>detailed treatment</em></li>
+                    <li><a href="#method-limitations">Limitations & Caveats</a></li>
+                </ol>
+            </div>
+
+            <!-- 1. DATA SOURCES -->
+            <div class="methodology-section" id="method-sources">
+                <h3>1. Data Sources & Coverage</h3>
+
+                <p>This dashboard integrates two primary federal data products, supplemented by Texas state legislation and IRS regulatory guidance:</p>
+
+                <table class="method-table">
+                    <tr>
+                        <th>Source</th>
+                        <th>Coverage</th>
+                        <th>Used For</th>
+                    </tr>
+                    <tr>
+                        <td><strong>CMS Open Enrollment Period (OEP) Public Use Files</strong></td>
+                        <td>Plan years 2015–2025; county-level for TX, state-level for comparison states</td>
+                        <td>Total enrollment, metal level distribution, FPL bracket distribution, age distribution, observed ≤$10 premium metric</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CMS QHP Landscape Individual Market Medical Files</strong></td>
+                        <td>Plan years 2015–2026; plan-level detail for all TX rating areas</td>
+                        <td>Gross premiums by metal level, SLCSP identification, lowest-cost bronze/silver/gold per rating area and scenario</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IRS Federal Poverty Level Guidelines</strong></td>
+                        <td>2015–2026 (48 contiguous states)</td>
+                        <td>Income thresholds for subsidy calculations</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IRS Revenue Procedure 2025-25</strong></td>
+                        <td>2026 plan year</td>
+                        <td>Indexed applicable percentage schedule for the post-ARP subsidy reversion</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Texas SB 1296 (88th Legislature)</strong></td>
+                        <td>Effective 2023</td>
+                        <td>Rating area restructuring context (26 areas → 27 areas); premium alignment policy</td>
+                    </tr>
+                </table>
+
+                <h4>CMS PUF field availability notes</h4>
+                <p>Not all fields are available in all plan years. The county-level PUF files transitioned from Excel to CSV format starting in plan year 2020, with corresponding changes to column naming conventions. Specific limitations:</p>
+                <ul>
+                    <li><strong>FPL distribution:</strong> Available 2017–2025 at the county level for Texas. The 2017 files use a coarser bracket structure, and some small rural counties (2–5 per year) suppress FPL data entirely.</li>
+                    <li><strong>Age distribution:</strong> Available 2017–2025 with consistent age brackets (0–17, 18–25, 26–34, 35–44, 45–54, 55–64, 65+).</li>
+                    <li><strong>≤$10 premium metric:</strong> The field <code>Cnsmr_Prm_Aftr_APTC_LTEQ10</code> is only available in plan years 2022–2025. It counts enrollees whose after-subsidy premium is $10 or less per month.</li>
+                    <li><strong>100–138% FPL subgroup:</strong> A finer sub-bracket (100–138% FPL) appears alongside the broader 100–150% bracket starting in 2022. The 100–138% group is a <em>subset</em> of the 100–150% group. Our model uses the 100–150% bracket and excludes the 100–138% field to avoid double-counting.</li>
+                </ul>
+            </div>
+
+            <!-- 2. ENROLLMENT -->
+            <div class="methodology-section" id="method-enrollment">
+                <h3>2. Enrollment Trends (Tabs 1 & 2)</h3>
+
+                <h4>What the charts show</h4>
+                <p>The <strong>Texas Deep Dive</strong> tab presents three enrollment visualizations — total enrollment over time, metal level distribution, and FPL bracket distribution — all drawn from CMS OEP county-level PUFs aggregated to the state level. The <strong>State Comparison</strong> tab uses state-level PUF summaries for TX, FL, CA, NY, PA, GA, and NC.</p>
+
+                <h4>Key terms</h4>
+                <ul>
+                    <li><strong>Metal levels</strong> — ACA plans are categorized by actuarial value: Bronze (~60%), Silver (~70%), Gold (~80%), and Platinum (~90%). Catastrophic plans are available only to enrollees under 30 or those with hardship exemptions. Higher metal tiers cover a greater share of expected healthcare costs but carry higher premiums.</li>
+                    <li><strong>FPL (Federal Poverty Level)</strong> — Income thresholds set annually by HHS. Subsidy eligibility and the size of subsidies are determined by a household's income as a percentage of FPL. For a single individual in 2025, 100% FPL = $15,650/year.</li>
+                </ul>
+
+                <h4>Interpretation notes</h4>
+                <p>Enrollment figures represent plan selections during the Open Enrollment Period and may include individuals who subsequently failed to effectuate coverage (i.e., make their first premium payment). CMS does not publish effectuated enrollment at the county level in the OEP PUFs. The dramatic enrollment growth from 2022 onward reflects both expanded ARP subsidies and, for 2024–2025, the Medicaid unwinding (redetermination), which shifted newly ineligible Medicaid recipients into marketplace coverage with special enrollment periods.</p>
+            </div>
+
+            <!-- 3. PRICING -->
+            <div class="methodology-section" id="method-pricing">
+                <h3>3. Premium Pricing & Rating Areas (Sections A & B)</h3>
+
+                <h4>How premiums are sourced</h4>
+                <p>Gross (pre-subsidy) premiums are extracted from the CMS QHP Landscape Individual Market Medical files for each plan year. For each of Texas's rating areas (26 areas in 2015–2022, 27 in 2023–2026), we identify:</p>
+                <ul>
+                    <li><strong>Lowest-cost bronze:</strong> The cheapest bronze-tier plan available, deduplicated by Plan ID. This represents the minimum-cost coverage option an enrollee could select.</li>
+                    <li><strong>Second-Lowest-Cost Silver Plan (SLCSP):</strong> The benchmark plan used by the IRS and CMS to calculate the Advance Premium Tax Credit (APTC). Identified by sorting all unique silver plans by premium and selecting the second entry. If only one silver plan exists in a rating area, that plan is the SLCSP.</li>
+                    <li><strong>Lowest-cost gold:</strong> The cheapest gold-tier plan, for comparison purposes.</li>
+                </ul>
+
+                <h4>Six household scenarios</h4>
+                <p>Premiums are reported for six scenarios reflecting age-adjusted rates under the ACA's 3:1 age rating band:</p>
+
+                <table class="method-table">
+                    <tr><th>Scenario</th><th>Description</th><th>Age Factor (approx.)</th></tr>
+                    <tr><td>ind21</td><td>Individual, age 21</td><td>1.000 (base rate)</td></tr>
+                    <tr><td>ind40</td><td>Individual, age 40</td><td>~1.278</td></tr>
+                    <tr><td>ind60</td><td>Individual, age 60</td><td>~2.714</td></tr>
+                    <tr><td>fam21</td><td>Family of 4, adults age 21</td><td>Varies by insurer</td></tr>
+                    <tr><td>fam40</td><td>Family of 4, adults age 40</td><td>Varies by insurer</td></tr>
+                    <tr><td>fam50/fam60</td><td>Family of 4, adults age 50/60</td><td>Varies by insurer</td></tr>
+                </table>
+
+                <h4>Rating area mapping</h4>
+                <p>Texas assigns each of its 254 counties to a geographic rating area. Insurers set premiums at the rating area level, so all counties in the same area face the same base rates. A major restructuring occurred in 2023 under <strong>SB 1296</strong> (88th Texas Legislature), which reorganized the state from 26 to 27 rating areas and reassigned 209 of 254 counties. This dashboard handles both eras by maintaining per-year county-to-rating-area mappings, extracted directly from the QHP Landscape files.</p>
+
+                <div class="method-callout">
+                    <strong>Why this matters:</strong> A county that was in Rating Area 1 from 2015–2022 may have moved to Rating Area 14 in 2023. Naively applying a single mapping would assign incorrect premiums for half the time series. The dashboard uses year-specific mappings to ensure pricing accuracy across the structural break.
+                </div>
+
+                <h4>Net premium calculation in Sections A & B</h4>
+                <p>When a user selects a county, scenario, and FPL level, the calculator computes the after-subsidy premium using the formula described in <a href="#method-subsidies">Section 4</a> below. Section B repeats this for all six household scenarios simultaneously using the same county and FPL selection.</p>
+            </div>
+
+            <!-- 4. SUBSIDIES -->
+            <div class="methodology-section" id="method-subsidies">
+                <h3>4. Subsidy Calculations & the Three Eras</h3>
+
+                <h4>The APTC formula</h4>
+                <p>The Advance Premium Tax Credit (APTC) is the core federal subsidy that lowers premiums for eligible marketplace enrollees. The calculation proceeds as follows:</p>
+
+                <div class="method-formula">
+1. Expected Contribution = Annual Income × Applicable Percentage ÷ 12<br>
+2. APTC = max(0, SLCSP − Expected Contribution)<br>
+3. Net Premium = max(0, Gross Premium − APTC)
+                </div>
+
+                <p>The <strong>applicable percentage</strong> determines how much of their income a household is expected to contribute toward the benchmark (SLCSP) premium. It varies by income bracket and is linearly interpolated within each bracket. Three distinct schedules have been in effect:</p>
+
+                <h4>Schedule 1: Original ACA (2015–2020)</h4>
+                <table class="method-table">
+                    <tr><th>FPL Range</th><th>Applicable % (start)</th><th>Applicable % (end)</th></tr>
+                    <tr><td>100–133%</td><td>2.00%</td><td>2.00%</td></tr>
+                    <tr><td>133–150%</td><td>3.00%</td><td>4.00%</td></tr>
+                    <tr><td>150–200%</td><td>4.00%</td><td>6.40%</td></tr>
+                    <tr><td>200–250%</td><td>6.40%</td><td>8.10%</td></tr>
+                    <tr><td>250–300%</td><td>8.10%</td><td>9.60%</td></tr>
+                    <tr><td>300–400%</td><td>9.60%</td><td>9.60%</td></tr>
+                    <tr><td>&gt;400%</td><td colspan="2" style="text-align:center;"><em>No subsidy (400% FPL cliff)</em></td></tr>
+                </table>
+
+                <h4>Schedule 2: ARP/IRA Enhanced (2021–2025)</h4>
+                <p>The American Rescue Plan Act of 2021 (ARP) dramatically lowered applicable percentages and eliminated the 400% FPL cliff, extending subsidies to all income levels. The Inflation Reduction Act (IRA) extended these enhancements through 2025.</p>
+                <table class="method-table">
+                    <tr><th>FPL Range</th><th>Applicable % (start)</th><th>Applicable % (end)</th></tr>
+                    <tr><td>100–150%</td><td>0.00%</td><td>0.00%</td></tr>
+                    <tr><td>150–200%</td><td>0.00%</td><td>2.00%</td></tr>
+                    <tr><td>200–250%</td><td>2.00%</td><td>4.00%</td></tr>
+                    <tr><td>250–300%</td><td>4.00%</td><td>6.00%</td></tr>
+                    <tr><td>300–400%</td><td>6.00%</td><td>8.50%</td></tr>
+                    <tr><td>&gt;400%</td><td>8.50%</td><td>8.50%</td></tr>
+                </table>
+
+                <h4>Schedule 3: Post-ARP Reversion (2026+)</h4>
+                <p>Beginning in plan year 2026, the enhanced subsidies expire. The applicable percentage schedule reverts to the original ACA structure, indexed for inflation per <strong>IRS Revenue Procedure 2025-25</strong>. The 400% FPL cliff is reinstated.</p>
+                <table class="method-table">
+                    <tr><th>FPL Range</th><th>Applicable % (start)</th><th>Applicable % (end)</th></tr>
+                    <tr><td>100–133%</td><td>2.10%</td><td>2.10%</td></tr>
+                    <tr><td>133–150%</td><td>3.14%</td><td>4.19%</td></tr>
+                    <tr><td>150–200%</td><td>4.19%</td><td>6.60%</td></tr>
+                    <tr><td>200–250%</td><td>6.60%</td><td>8.44%</td></tr>
+                    <tr><td>250–300%</td><td>8.44%</td><td>9.96%</td></tr>
+                    <tr><td>300–400%</td><td>9.96%</td><td>9.96%</td></tr>
+                    <tr><td>&gt;400%</td><td colspan="2" style="text-align:center;"><em>No subsidy (400% FPL cliff reinstated)</em></td></tr>
+                </table>
+
+                <h4>Within-bracket interpolation</h4>
+                <p>For an enrollee at X% FPL within a bracket spanning [min%, max%], the applicable percentage is:</p>
+                <div class="method-formula">
+Applicable % = Start% + (X − min) / (max − min) × (End% − Start%)
+                </div>
+                <p>For example, an enrollee at 175% FPL under the ARP schedule: bracket is 150–200%, so position = (175−150)/(200−150) = 0.5, and applicable % = 0.00% + 0.5 × (2.00% − 0.00%) = 1.00%.</p>
+
+                <h4>FPL dollar amounts</h4>
+                <p>The Federal Poverty Level for a single individual (48 contiguous states) by plan year:</p>
+                <div class="method-formula" style="font-size: 0.85rem;">
+2015: $11,770 · 2016: $11,880 · 2017: $12,060 · 2018: $12,140 · 2019: $12,490<br>
+2020: $12,760 · 2021: $12,880 · 2022: $13,590 · 2023: $14,580 · 2024: $15,060<br>
+2025: $15,650 · 2026: $16,300 (projected)
+                </div>
+            </div>
+
+            <!-- 5. SILVER LOADING -->
+            <div class="methodology-section" id="method-silver">
+                <h3>5. Silver Loading & SB 1296 (Section C)</h3>
+
+                <h4>Gold/Silver price ratio</h4>
+                <p>This chart tracks the ratio of the lowest-cost gold premium to the lowest-cost silver premium for a 40-year-old individual, averaged across all Texas rating areas. A ratio below 1.0 means gold plans are cheaper than silver plans — an inversion caused by "silver loading."</p>
+
+                <h4>What is silver loading?</h4>
+                <p>In October 2017, the Trump administration ended federal Cost-Sharing Reduction (CSR) payments to insurers. CSRs reduce out-of-pocket costs for enrollees at 100–250% FPL and are only available on silver plans. Rather than absorb the cost, insurers <em>loaded</em> the unpaid CSR expense onto silver premiums specifically. Because the APTC benchmark (SLCSP) is a silver plan, this inflated silver premiums increased subsidy amounts for all enrollees — creating a "silver loading" windfall that made bronze and gold plans effectively cheaper after subsidies.</p>
+
+                <p><strong>SB 1296 (2023):</strong> Texas passed SB 1296 during the 88th Legislature, which restructured rating areas and included "premium alignment" provisions affecting how insurers distribute CSR costs. The impact is visible in the gold/silver ratio beginning in plan year 2023.</p>
+
+                <h4>"What You Pay vs. What Government Pays" chart</h4>
+                <p>This stacked area chart shows the monthly cost breakdown for a specific reference scenario:</p>
+                <ul>
+                    <li><strong>Scenario:</strong> 40-year-old individual at 200% FPL purchasing the lowest-cost silver plan</li>
+                    <li><strong>Geography:</strong> Averaged across 15 major Texas counties (Harris, Dallas, Tarrant, Bexar, Travis, Collin, Denton, Fort Bend, Hidalgo, El Paso, Montgomery, Williamson, Cameron, Nueces, Brazoria)</li>
+                    <li><strong>"Consumer Pays"</strong> = Net premium after APTC</li>
+                    <li><strong>"Government Pays"</strong> = APTC amount</li>
+                    <li>The subsidy schedule applied follows the three eras described in <a href="#method-subsidies">Section 4</a></li>
+                </ul>
+                <div class="method-callout">
+                    <strong>Note:</strong> This chart illustrates the subsidy mechanics for a single representative scenario. It is not a population-weighted average. Different age, income, and plan selections would produce different splits.
+                </div>
+            </div>
+
+            <!-- 6. ELIGIBILITY MODEL -->
+            <div class="methodology-section" id="method-eligibility">
+                <h3>6. $0 Plan Eligibility Model (Section D)</h3>
+
+                <div class="method-callout-blue">
+                    This is the most methodologically complex component of the dashboard. It estimates the share of Texas marketplace enrollees who <em>could</em> obtain a plan with a $0 monthly premium — reflecting potential access, not actual consumer choices.
+                </div>
+
+                <h4>6.1 Overview</h4>
+                <p>Section D answers: <em>"What share of marketplace enrollees have access to a free (zero-premium) plan?"</em> It presents three data series:</p>
+                <ul>
+                    <li><strong>Modeled $0 Bronze Eligibility</strong> (green line) — Our model's estimate of the percentage of enrollees who could obtain a $0 premium on the lowest-cost bronze plan, given their county, age, and income.</li>
+                    <li><strong>"Without ARP" Counterfactual</strong> (red dashed line) — The same model, but applying the pre-ARP subsidy schedule to all years. This isolates the causal impact of enhanced subsidies.</li>
+                    <li><strong>CMS Observed ≤$10/month</strong> (orange triangles, 2022–2025 only) — The actual share of enrollees paying $10 or less per month after APTC, as reported in CMS PUF data.</li>
+                </ul>
+
+                <h4>6.2 The modeling approach</h4>
+                <p>The model computes eligibility for each of Texas's 254 counties independently, then aggregates to a statewide figure weighted by county enrollment. For a single county in a single year:</p>
+
+                <p><strong>Step 1: Map age groups to premium tiers.</strong></p>
+                <table class="method-table">
+                    <tr><th>CMS Age Group</th><th>Premium Scenario Used</th><th>Rationale</th></tr>
+                    <tr><td>0–17, 18–25, 26–34</td><td>ind21 (Age 21 rate)</td><td>ACA child rates apply for dependents; young adult rates are close to the base rate</td></tr>
+                    <tr><td>35–44, 45–54</td><td>ind40 (Age 40 rate)</td><td>Mid-range of the 3:1 age rating band</td></tr>
+                    <tr><td>55–64, 65+</td><td>ind60 (Age 60 rate)</td><td>Upper end of the age rating band</td></tr>
+                </table>
+
+                <p><strong>Step 2: Assign FPL bracket midpoints.</strong> Each enrollee's FPL bracket is represented by its midpoint for the subsidy calculation:</p>
+                <table class="method-table">
+                    <tr><th>FPL Bracket</th><th>Midpoint Used</th><th>Notes</th></tr>
+                    <tr><td>&lt;100% FPL</td><td>75%</td><td>Below subsidy eligibility floor; these enrollees receive no APTC</td></tr>
+                    <tr><td>100–150%</td><td>125%</td><td>Primary bracket for eligibility analysis</td></tr>
+                    <tr><td>150–200%</td><td>175%</td><td></td></tr>
+                    <tr><td>200–250%</td><td>225%</td><td></td></tr>
+                    <tr><td>250–300%</td><td>275%</td><td></td></tr>
+                    <tr><td>300–400%</td><td>350%</td><td>Upper bracket; subject to 400% cliff under pre-ARP and post-ARP rules</td></tr>
+                    <tr><td>&gt;400%</td><td>500%</td><td>No APTC under pre-ARP or post-ARP; capped contribution under ARP</td></tr>
+                    <tr><td>Other/Unknown</td><td>200%</td><td>Conservative default; assigned to the median bracket</td></tr>
+                </table>
+
+                <p><strong>Step 3: Compute net premium for each (age, FPL) cell.</strong> For each combination of age tier <em>g</em> and FPL bracket <em>f</em> in a county:</p>
+                <div class="method-formula">
+1. Look up Lowest Bronze and SLCSP for that county's rating area, using scenario <em>g</em><br>
+2. Compute annual income = FPL_dollar_amount × midpoint(f) / 100<br>
+3. Look up Applicable Percentage for midpoint(f) under the relevant subsidy era<br>
+4. Expected Contribution = income × applicable_pct / 12<br>
+5. APTC = max(0, SLCSP − Expected Contribution)<br>
+6. Net Premium = max(0, Lowest Bronze − APTC)<br>
+7. If Net Premium ≤ 0 → this cell is "$0-eligible"
+                </div>
+
+                <p><strong>Step 4: Weight using the independence assumption.</strong> CMS provides age and FPL distributions as separate <em>marginal</em> distributions, not as a joint cross-tabulation. We assume statistical independence between age and FPL within each county:</p>
+                <div class="method-formula">
+P(age=g, fpl=f) ≈ P(age=g) × P(fpl=f)<br><br>
+where P(age=g) = count_in_age_group_g / total_age_classified<br>
+and &nbsp; P(fpl=f) = count_in_fpl_bracket_f / total_fpl_classified
+                </div>
+
+                <p><strong>Step 5: County-level aggregation.</strong></p>
+                <div class="method-formula">
+County Eligibility Rate = Σ<sub>g,f</sub> [ P(age=g) × P(fpl=f) × I(net_premium(g,f) ≤ 0) ]<br><br>
+where I(·) is the indicator function (1 if true, 0 if false)
+                </div>
+
+                <p><strong>Step 6: Statewide aggregation.</strong></p>
+                <div class="method-formula">
+Statewide Rate = Σ<sub>county</sub> [ Eligibility_Rate(county) × Enrollment(county) ] / Σ<sub>county</sub> Enrollment(county)
+                </div>
+
+                <h4>6.3 The counterfactual</h4>
+                <p>The "Without ARP" line applies the <strong>pre-ARP subsidy schedule</strong> (Section 4, Schedule 1) to all years, including 2021–2025, while keeping actual premiums and enrollment distributions unchanged. This isolates the policy effect: the vertical gap between the green and red lines represents the additional share of enrollees who gained $0 access specifically because of the ARP/IRA subsidy enhancements.</p>
+
+                <p>For 2017–2020, the modeled and counterfactual lines are identical (both use the pre-ARP schedule). For 2026, the modeled line uses the post-ARP schedule (Schedule 3) while the counterfactual continues to use the pre-ARP schedule (Schedule 1). Note that the 2026 post-ARP rates are slightly higher than the original pre-ARP rates due to inflation indexing, so the counterfactual may modestly exceed the modeled estimate in 2026.</p>
+
+                <h4>6.4 Why the modeled rate exceeds the observed rate</h4>
+                <p>The most striking feature of Section D is the gap between modeled eligibility (82–91% during ARP) and observed ≤$10 enrollment (38–62%). This gap is expected and interpretable:</p>
+                <ul>
+                    <li><strong>The model measures potential access.</strong> It asks: "Could this person get a $0 plan if they chose the cheapest bronze?" Many enrollees who <em>could</em> get a free bronze plan instead choose silver or gold plans with higher premiums but richer benefits (lower deductibles, lower copays, prescription drug coverage).</li>
+                    <li><strong>The CMS metric measures actual choices.</strong> The ≤$10 field counts enrollees who actually selected plans costing $10 or less per month. It captures realized take-up, not theoretical eligibility.</li>
+                    <li><strong>The "take-up gap"</strong> between modeled and observed is itself a policy-relevant finding. It suggests that many enrollees are willingly paying for richer coverage when they have the option of free minimum coverage — which may indicate the marketplace is functioning as intended, with consumers making informed trade-offs between cost and coverage generosity.</li>
+                </ul>
+
+                <div class="method-callout-blue">
+                    <strong>Policy interpretation:</strong> The modeled rate answers "How many <em>could</em> get free coverage?" while the observed rate answers "How many <em>chose</em> effectively free coverage?" Both are important — the first measures the reach of the subsidy system, the second measures consumer behavior within it.
+                </div>
+
+                <h4>6.5 The 2026 projection</h4>
+                <p>The 2026 data point is a projection, not an observation:</p>
+                <ul>
+                    <li><strong>Premiums:</strong> Actual 2026 QHP premiums from the Landscape file (filed and approved rates)</li>
+                    <li><strong>Subsidy schedule:</strong> Post-ARP reversion (Schedule 3), with 400% FPL cliff reinstated</li>
+                    <li><strong>Enrollment distribution:</strong> Uses the <em>2025</em> county-level enrollment data (age and FPL distributions) as a proxy, since 2026 enrollment data is not yet available</li>
+                </ul>
+                <p>This projection assumes the 2025 enrollment population remains constant, which is unlikely: the reinstatement of the 400% FPL cliff will likely cause some higher-income enrollees to drop marketplace coverage, and Medicaid redetermination dynamics may continue to shift enrollment composition.</p>
+
+                <h4>6.6 Key assumptions and their justification</h4>
+                <table class="method-table">
+                    <tr><th>Assumption</th><th>Justification</th><th>Potential Bias</th></tr>
+                    <tr>
+                        <td>Independence of age and FPL</td>
+                        <td>CMS only publishes marginal distributions, not cross-tabs. Independence is a standard econometric approach when joint data is unavailable.</td>
+                        <td>In practice, older enrollees may skew toward different income levels. If age and income are positively correlated, the model may slightly overestimate eligibility (older + higher-income cells would be underweighted).</td>
+                    </tr>
+                    <tr>
+                        <td>FPL bracket midpoints represent the bracket</td>
+                        <td>Without individual-level data, midpoints are the standard simplification for grouped data.</td>
+                        <td>Within any bracket, the actual income distribution may be skewed (e.g., toward the lower bound in the 100–150% bracket). This could modestly affect results near the $0 eligibility threshold.</td>
+                    </tr>
+                    <tr>
+                        <td>Lowest bronze = relevant plan for $0 analysis</td>
+                        <td>The lowest-cost bronze plan sets the floor for what a consumer can access at minimum cost.</td>
+                        <td>None for the specific question asked. However, some enrollees may not have access to the absolute cheapest bronze if their preferred provider network differs.</td>
+                    </tr>
+                    <tr>
+                        <td>Household size = 1 for FPL calculations</td>
+                        <td>Individual market pricing is per-person; using single-person FPL amounts with individual premiums is internally consistent.</td>
+                        <td>Family enrollees face different premiums and have different FPL thresholds. Family scenarios (fam21, fam40, fam50) are available in Section A/B but are not incorporated into the statewide eligibility model.</td>
+                    </tr>
+                    <tr>
+                        <td>2025 enrollment as 2026 proxy</td>
+                        <td>Most recent available data; enrollment composition changes gradually between adjacent years.</td>
+                        <td>The subsidy cliff may cause attrition among higher-income enrollees, which would increase the eligible share among remaining enrollees. The 2026 projection may therefore be conservative.</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- 7. LIMITATIONS -->
+            <div class="methodology-section" id="method-limitations">
+                <h3>7. Limitations & Caveats</h3>
+
+                <h4>Data limitations</h4>
+                <ul>
+                    <li><strong>Enrollment is plan selections, not effectuated coverage.</strong> OEP PUF figures include individuals who selected a plan but may not have paid their first premium.</li>
+                    <li><strong>2017 FPL data has gaps.</strong> The 2017 PUF files use a coarser income bracket structure. Two small rural counties (De Witt, Kenedy) have suppressed FPL data for that year.</li>
+                    <li><strong>Small-county suppression.</strong> CMS suppresses data for cells with fewer than 10 enrollees. In very small counties, some age or FPL brackets may be reported as zero when they actually have a small number of enrollees.</li>
+                    <li><strong>No individual-level data.</strong> County-level aggregates prevent analysis of within-bracket variation or individual enrollment decisions.</li>
+                </ul>
+
+                <h4>Model limitations</h4>
+                <ul>
+                    <li><strong>Independence assumption.</strong> The model treats age and FPL distributions as statistically independent within each county. If these are correlated (e.g., older enrollees systematically have higher incomes), the joint distribution estimates will contain error.</li>
+                    <li><strong>Single-person focus.</strong> The eligibility model uses individual (household size = 1) premiums and FPL levels. Family households face different premium structures and FPL thresholds that are not captured in the statewide model.</li>
+                    <li><strong>Static enrollment for 2026.</strong> The 2026 projection assumes unchanged enrollment composition, but the subsidy cliff will likely alter the income and age mix of enrollees.</li>
+                    <li><strong>Cost-sharing reduction effects not modeled.</strong> Silver plan CSR variants (73%, 87%, 94% actuarial value) effectively reduce out-of-pocket costs for low-income enrollees but are not reflected in the premium-based eligibility calculation.</li>
+                </ul>
+
+                <h4>Scope limitations</h4>
+                <ul>
+                    <li>This dashboard covers the <strong>individual marketplace only</strong> (Healthcare.gov plans for Texas). It does not include employer-sponsored coverage, Medicaid, CHIP, Medicare, or off-exchange individual plans.</li>
+                    <li><strong>Comparison states</strong> (Tab 2) use state-level CMS summaries and are not subject to the same county-level analysis as Texas.</li>
+                    <li>All monetary values are <strong>nominal</strong> (not inflation-adjusted). The premium trends reflect both underlying cost changes and general inflation.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
 </main>
 
 <footer>
@@ -1169,7 +1636,7 @@ Chart.defaults.color = '#666';
 // TAB SWITCHING
 // ============================================================================
 
-const tabInitialized = { 0: false, 1: false, 2: false };
+const tabInitialized = { 0: false, 1: false, 2: false, 3: true };
 
 function switchTab(tabIndex, evt) {
     // Hide all panels
