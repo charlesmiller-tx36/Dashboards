@@ -5,7 +5,7 @@
 | Requirement | Details |
 |---|---|
 | **Author** | Charles Miller, Texas 2036 |
-| **Creation date** | February 27, 2026 (initial clone); last updated March 6, 2026 |
+| **Creation date** | February 27, 2026 (initial clone); last updated March 9, 2026 |
 | **Purpose** | Branded variant of the NASHP Hospital Cost & Transparency Dashboard for Texas Employers for Affordable Healthcare (TXEAHC). Enables exploration of hospital-level payer mix, operating profit margins, and commercial pricing metrics across all 50 states and D.C. (2020–2024), with filters by state, metro area, urban/rural classification, hospital system, legislative district, bed count, and facility type. Includes a State Comparison tab for side-by-side benchmarking. |
 | **Data sources** | See [Data Sources](#data-sources) below |
 | **AI usage** | See [AI Usage](#ai-usage) below |
@@ -94,7 +94,8 @@ The underlying dashboard functionality (filters, charts, data table, PDF export,
 | Mar 6, 2026 | Updated color palette for improved chart readability; refreshed TXEAHC logo assets (PNG/WebP) |
 | Mar 9, 2026 | **Chart sharing & embedding features:** Added share buttons to all 6 chart panels (download branded PNG, share to X/LinkedIn/Facebook, copy embed code). Branded share card includes TXEAHC header, chart title, prominent state/year headline with hospital count, active filter context, and NASHP source attribution. Social sharing copies image to clipboard for paste into compose window. Embed code uses dynamic URL detection (auto-adjusts if hosting location changes) with localhost/file:// safeguard. |
 | Mar 9, 2026 | **Cascading filter improvements:** Multi-select dropdowns now track visible (state-filtered) option counts. Button labels show "X of Y [category]" relative to the available universe (e.g., "15 of 21 Metros" when Texas is selected) instead of national totals. `isAll()` correctly reflects whether all *available* options are selected. Bed Max defaults to "none" (no upper limit) with 3000 as the first explicit limiting value. |
-| Mar 9, 2026 | **Embed mode:** Added `?chart=<id>` URL parameter support for iframe embedding. When present, the page renders only the target chart panel with a compact TXEAHC branding bar, a "View full dashboard" link, and a source footer. Hides all other UI (filters, KPIs, tabs, data table, other charts). Works for both dashboard-tab and comparison-tab charts. |
+| Mar 9, 2026 | **Embed mode:** Added `?chart=<id>` URL parameter support for iframe embedding. When present, the page renders only the target chart panel with a compact TXEAHC branding bar, filter context bar (state/year headline + narrowing filters), and source footer. Hides all other UI. Embed URLs now include serialized filter state so embedded charts reflect the dashboard's active filters at time of copy. Explicit `index.html` in embed src for iframe compatibility. |
+| Mar 9, 2026 | **Share image logo fix:** Replaced CSS filter-based logo rendering (unsupported by html2canvas) with canvas pixel manipulation (`_getWhiteLogo()`) that recolors all pixels to white while preserving alpha transparency. Share card uses solid `#15063F` background instead of gradient for html2canvas compatibility. |
 
 ---
 

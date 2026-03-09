@@ -442,8 +442,7 @@ function ms(cid,opts,lbl,cb,initial,labelFn){
             if(!sel.size&&validSet.size){validSet.forEach(function(v){sel.add(v);});uc();ul();changed=true;}
             return changed;
         },
-        selectAll:function(){visible.forEach(function(o){sel.add(o);});uc();ul();},
-        setSelection:function(vals){sel.clear();vals.forEach(function(v){if(visible.has(v)||new Set(opts).has(v))sel.add(v);});uc();ul();}
+        selectAll:function(){visible.forEach(function(o){sel.add(o);});uc();ul();}
     };
 }
 document.addEventListener('click',function(){document.querySelectorAll('.msd.open').forEach(function(d){d.classList.remove('open');});});
@@ -1966,62 +1965,6 @@ try {
         if(vs.length){var mx=Math.min(Math.ceil(Math.max.apply(null,vs)*1.1),10);document.getElementById('z2hi').value=mx;zm2();}
     },200);
 
-    /* ===== Filter Serialization (for embed URLs) ===== */
-    /* Encode current filter state as URL search params — only includes narrowed filters */
-    function serializeFilters(){
-        var p=new URLSearchParams();
-        p.set('yr',document.getElementById('f-yr').value);
-        if(!msSt.isAll())p.set('st',Array.from(msSt.get()).join(','));
-        if(!msMsa.isAll())p.set('msa',Array.from(msMsa.get()).join(','));
-        if(!msUr.isAll())p.set('ur',Array.from(msUr.get()).join(','));
-        if(!msSy.isAll())p.set('sy',Array.from(msSy.get()).join(','));
-        if(!msHd.isAll())p.set('hd',Array.from(msHd.get()).join(','));
-        if(!msSn.isAll())p.set('sn',Array.from(msSn.get()).join(','));
-        if(!msSh.isAll())p.set('sh',Array.from(msSh.get()).join(','));
-        if(!msSs.isAll())p.set('ss',Array.from(msSs.get()).join(','));
-        var blo=+document.getElementById('f-blo').value||0;
-        var bhiVal=document.getElementById('f-bhi').value;
-        if(blo>0)p.set('blo',blo);
-        if(bhiVal)p.set('bhi',bhiVal);
-        if(document.getElementById('f-ca').checked)p.set('ca','1');
-        return p;
-    }
-    /* Make serializeFilters accessible to ShareManager */
-    window._serializeFilters=serializeFilters;
-
-    /* Apply filter state from URL params — called before first go() if params present */
-    function applyFilterParams(){
-        var p=new URLSearchParams(window.location.search);
-        if(!p.has('yr')&&!p.has('st'))return false; /* no filter params */
-        /* Year */
-        if(p.has('yr')){document.getElementById('f-yr').value=p.get('yr');}
-        /* States — must be applied first, then cascade */
-        if(p.has('st')){
-            var stVals=new Set(p.get('st').split(','));
-            msSt.setSelection(stVals);
-        }
-        cascadeFilters();
-        /* Downstream filters — apply after cascade so visible sets are correct */
-        if(p.has('msa'))msMsa.setSelection(new Set(p.get('msa').split(',')));
-        if(p.has('ur'))msUr.setSelection(new Set(p.get('ur').split(',')));
-        if(p.has('sy'))msSy.setSelection(new Set(p.get('sy').split(',')));
-        if(p.has('hd'))msHd.setSelection(new Set(p.get('hd').split(',')));
-        if(p.has('sn'))msSn.setSelection(new Set(p.get('sn').split(',')));
-        if(p.has('sh'))msSh.setSelection(new Set(p.get('sh').split(',')));
-        if(p.has('ss'))msSs.setSelection(new Set(p.get('ss').split(',')));
-        /* Beds */
-        if(p.has('blo'))document.getElementById('f-blo').value=p.get('blo');
-        if(p.has('bhi'))document.getElementById('f-bhi').value=p.get('bhi');
-        /* Critical Access */
-        if(p.get('ca')==='1')document.getElementById('f-ca').checked=true;
-        return true;
-    }
-
-    /* If URL has filter params, apply them instead of defaults */
-    if(applyFilterParams()){
-        go(); /* re-run with applied filters */
-    }
-
     /* ===== Embed Mode ===== */
     (function(){
         var params=new URLSearchParams(window.location.search);
@@ -2078,7 +2021,7 @@ try {
         if(logoSrc){
             var logo=document.createElement('img');
             logo.src=logoSrc;
-            logo.style.cssText='height:36px;width:auto;filter:brightness(0) invert(1);';
+            logo.style.cssText='height:28px;width:auto;';
             brand.appendChild(logo);
         }
         var brandText=document.createElement('span');
@@ -2092,22 +2035,6 @@ try {
         fullLink.textContent='View full dashboard \u2192';
         brand.appendChild(fullLink);
         document.body.insertBefore(brand,document.body.firstChild);
-
-        /* Add filter context bar below branding */
-        var ctxBar=document.createElement('div');
-        ctxBar.style.cssText='background:#f8f9fb;padding:8px 16px;font-family:Montserrat,sans-serif;border-bottom:1px solid #e0e0e0;';
-        var stateNames={'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut','DE':'Delaware','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa','KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming','DC':'District of Columbia'};
-        var stGeo='';
-        if(msSt.isAll())stGeo='All States';
-        else{var stArr=Array.from(msSt.get());stGeo=stArr.length<=3?stArr.map(function(s){return stateNames[s]||s;}).join(', '):stArr.length+' States';}
-        var yr=document.getElementById('f-yr').value;
-        var badge=document.getElementById(panel.querySelector('.badge')?panel.querySelector('.badge').id:'');
-        var hospCount=badge?badge.textContent.trim():'';
-        var geoLine=stGeo+' \u2014 '+yr+(hospCount?' ('+hospCount+' hospitals)':'');
-        var narrowDesc=typeof getFilterDesc==='function'?getFilterDesc(true):'';
-        ctxBar.innerHTML='<div style="font-size:13px;font-weight:600;color:#002D74;">'+geoLine+'</div>'
-            +(narrowDesc?'<div style="font-size:10px;color:#6B7280;margin-top:2px;">'+narrowDesc+'</div>':'');
-        brand.parentElement.insertBefore(ctxBar,brand.nextSibling);
 
         /* Add compact source footer */
         var foot=document.createElement('div');
@@ -2168,45 +2095,20 @@ var ShareManager={
         return{title:m.title,desc:m.desc,subject:m.subject,filterDesc:filterDesc,hospCount:hospCount,year:yr,stateGeo:stGeo};
     },
 
-    /* Recolor logo to white for dark backgrounds (html2canvas ignores CSS filters) */
-    _whiteLogoSrc:null,
-    _getWhiteLogo:function(){
-        if(this._whiteLogoSrc)return this._whiteLogoSrc;
-        var logoEl=document.querySelector('.hdr img');
-        if(!logoEl)return '';
-        try{
-            var c=document.createElement('canvas');
-            var img=new Image();img.src=logoEl.src;
-            c.width=img.naturalWidth||img.width||732;
-            c.height=img.naturalHeight||img.height||269;
-            var cx=c.getContext('2d');
-            cx.drawImage(img,0,0,c.width,c.height);
-            var id=cx.getImageData(0,0,c.width,c.height);
-            var d=id.data;
-            /* Set all visible pixels to white, preserve alpha */
-            for(var i=0;i<d.length;i+=4){
-                d[i]=255;d[i+1]=255;d[i+2]=255;
-            }
-            cx.putImageData(id,0,0);
-            this._whiteLogoSrc=c.toDataURL('image/png');
-        }catch(e){this._whiteLogoSrc=logoEl.src;}
-        return this._whiteLogoSrc;
-    },
-
     /* Build branded share card as off-screen div */
     buildShareCard:function(chartId){
         var ctx=this.getShareContext(chartId);
         var card=document.createElement('div');
         card.style.cssText='position:fixed;left:-9999px;top:0;width:900px;background:#fff;font-family:Montserrat,sans-serif;border-radius:0;overflow:hidden;';
 
-        /* Header bar — use solid color (html2canvas has issues with gradients) */
+        /* Header bar */
         var hdr=document.createElement('div');
-        hdr.style.cssText='background:#15063F;padding:16px 24px;display:flex;align-items:center;gap:14px;';
-        var whiteSrc=this._getWhiteLogo();
-        if(whiteSrc){
+        hdr.style.cssText='background:linear-gradient(135deg,#15063F,#1A184D);padding:16px 24px;display:flex;align-items:center;gap:14px;';
+        var logoEl=document.querySelector('.hdr img');
+        if(logoEl){
             var logoClone=document.createElement('img');
-            logoClone.src=whiteSrc;
-            logoClone.style.cssText='height:44px;width:auto;';
+            logoClone.src=logoEl.src;
+            logoClone.style.cssText='height:40px;width:auto;';
             hdr.appendChild(logoClone);
         }
         var hdrText=document.createElement('div');
@@ -2351,9 +2253,7 @@ var ShareManager={
             return;
         }
         var m=this.meta[this.currentChartId]||{title:'Chart'};
-        var filterParams=window._serializeFilters?window._serializeFilters():new URLSearchParams();
-        filterParams.set('chart',this.currentChartId);
-        var embedUrl=this.getBaseUrl()+'index.html?'+filterParams.toString();
+        var embedUrl=this.getBaseUrl()+'?chart='+this.currentChartId;
         var code='<iframe src="'+embedUrl+'" width="800" height="550" frameborder="0" style="border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);" title="'+m.title+'"></iframe>';
         var self=this;
         navigator.clipboard.writeText(code).then(function(){
