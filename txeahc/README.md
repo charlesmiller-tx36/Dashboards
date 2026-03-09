@@ -53,6 +53,10 @@ This dashboard is a branded clone of the NASHP Hospital Cost & Transparency Dash
 2. **Color palette development:** Iterative refinement of TXEAHC color variables to ensure visual distinction across chart elements while maintaining organizational branding (deep purple primary, teal accent, gold highlight).
 3. **Logo integration:** Embedded TXEAHC logo as base64-encoded PNG in the dashboard header.
 
+4. **Chart sharing & embedding:** "Add share buttons to each chart panel — download branded PNG, share to social (X, LinkedIn, Facebook), and copy embed code. Branded share images should include TXEAHC header, chart title, geographic/filter context, and source attribution. Social sharing should copy the image to clipboard. Embed code should detect the hosting URL dynamically."
+5. **Cascading filter visibility:** "Multi-select dropdown labels should reflect the state-filtered universe, not national totals. When Texas is selected, 'All Metros' means all Texas metros, and partial selections show 'X of Y' with Y being the Texas count."
+6. **Bed Max default:** "Change Bed Max from a default of 3000 to 'none' (no upper limit), with 3000 as the first explicit limiting value."
+
 The underlying dashboard functionality (filters, charts, data table, PDF export, State Comparison tab) was developed through the prompt sequence documented in the `nashp-hospital-cost` README.
 
 ---
@@ -76,6 +80,7 @@ The underlying dashboard functionality (filters, charts, data table, PDF export,
 | `nashp_data.js` | Compressed hospital data (tab-delimited with string lookup table, ~2.7 MB) |
 | `congress_data.js` | CCN-to-congressional-district mapping + 119th Congress member names (~58 KB) |
 | `state_leg_data.js` | CCN-to-state-legislative-district mapping + TX 89th Legislature member names (~104 KB) |
+| `archive/` | Versioned backups of previous `index.html` releases (date-stamped) |
 | `README.md` | This documentation file |
 
 ---
@@ -87,6 +92,8 @@ The underlying dashboard functionality (filters, charts, data table, PDF export,
 | Feb 27, 2026 | Initial TXEAHC-branded clone created from NASHP dashboard |
 | Mar 5, 2026 | Inherited State Comparison tab refinements from parent dashboard |
 | Mar 6, 2026 | Updated color palette for improved chart readability; refreshed TXEAHC logo assets (PNG/WebP) |
+| Mar 9, 2026 | **Chart sharing & embedding features:** Added share buttons to all 6 chart panels (download branded PNG, share to X/LinkedIn/Facebook, copy embed code). Branded share card includes TXEAHC header, chart title, prominent state/year headline with hospital count, active filter context, and NASHP source attribution. Social sharing copies image to clipboard for paste into compose window. Embed code uses dynamic URL detection (auto-adjusts if hosting location changes) with localhost/file:// safeguard. |
+| Mar 9, 2026 | **Cascading filter improvements:** Multi-select dropdowns now track visible (state-filtered) option counts. Button labels show "X of Y [category]" relative to the available universe (e.g., "15 of 21 Metros" when Texas is selected) instead of national totals. `isAll()` correctly reflects whether all *available* options are selected. Bed Max defaults to "none" (no upper limit) with 3000 as the first explicit limiting value. |
 
 ---
 
