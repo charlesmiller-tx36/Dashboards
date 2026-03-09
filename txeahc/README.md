@@ -94,6 +94,7 @@ The underlying dashboard functionality (filters, charts, data table, PDF export,
 | Mar 6, 2026 | Updated color palette for improved chart readability; refreshed TXEAHC logo assets (PNG/WebP) |
 | Mar 9, 2026 | **Chart sharing & embedding features:** Added share buttons to all 6 chart panels (download branded PNG, share to X/LinkedIn/Facebook, copy embed code). Branded share card includes TXEAHC header, chart title, prominent state/year headline with hospital count, active filter context, and NASHP source attribution. Social sharing copies image to clipboard for paste into compose window. Embed code uses dynamic URL detection (auto-adjusts if hosting location changes) with localhost/file:// safeguard. |
 | Mar 9, 2026 | **Cascading filter improvements:** Multi-select dropdowns now track visible (state-filtered) option counts. Button labels show "X of Y [category]" relative to the available universe (e.g., "15 of 21 Metros" when Texas is selected) instead of national totals. `isAll()` correctly reflects whether all *available* options are selected. Bed Max defaults to "none" (no upper limit) with 3000 as the first explicit limiting value. |
+| Mar 9, 2026 | **Embed mode:** Added `?chart=<id>` URL parameter support for iframe embedding. When present, the page renders only the target chart panel with a compact TXEAHC branding bar, a "View full dashboard" link, and a source footer. Hides all other UI (filters, KPIs, tabs, data table, other charts). Works for both dashboard-tab and comparison-tab charts. |
 
 ---
 
