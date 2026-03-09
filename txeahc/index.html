@@ -1968,17 +1968,18 @@ try {
 
     /* ===== Filter Serialization (for embed URLs) ===== */
     /* Encode current filter state as URL search params — only includes narrowed filters */
+    var FDLM='|'; /* filter delimiter — avoids commas in metro/system names */
     function serializeFilters(){
         var p=new URLSearchParams();
         p.set('yr',document.getElementById('f-yr').value);
-        if(!msSt.isAll())p.set('st',Array.from(msSt.get()).join(','));
-        if(!msMsa.isAll())p.set('msa',Array.from(msMsa.get()).join(','));
-        if(!msUr.isAll())p.set('ur',Array.from(msUr.get()).join(','));
-        if(!msSy.isAll())p.set('sy',Array.from(msSy.get()).join(','));
-        if(!msHd.isAll())p.set('hd',Array.from(msHd.get()).join(','));
-        if(!msSn.isAll())p.set('sn',Array.from(msSn.get()).join(','));
-        if(!msSh.isAll())p.set('sh',Array.from(msSh.get()).join(','));
-        if(!msSs.isAll())p.set('ss',Array.from(msSs.get()).join(','));
+        if(!msSt.isAll())p.set('st',Array.from(msSt.get()).join(FDLM));
+        if(!msMsa.isAll())p.set('msa',Array.from(msMsa.get()).join(FDLM));
+        if(!msUr.isAll())p.set('ur',Array.from(msUr.get()).join(FDLM));
+        if(!msSy.isAll())p.set('sy',Array.from(msSy.get()).join(FDLM));
+        if(!msHd.isAll())p.set('hd',Array.from(msHd.get()).join(FDLM));
+        if(!msSn.isAll())p.set('sn',Array.from(msSn.get()).join(FDLM));
+        if(!msSh.isAll())p.set('sh',Array.from(msSh.get()).join(FDLM));
+        if(!msSs.isAll())p.set('ss',Array.from(msSs.get()).join(FDLM));
         var blo=+document.getElementById('f-blo').value||0;
         var bhiVal=document.getElementById('f-bhi').value;
         if(blo>0)p.set('blo',blo);
@@ -1997,18 +1998,18 @@ try {
         if(p.has('yr')){document.getElementById('f-yr').value=p.get('yr');}
         /* States — must be applied first, then cascade */
         if(p.has('st')){
-            var stVals=new Set(p.get('st').split(','));
+            var stVals=new Set(p.get('st').split(FDLM));
             msSt.setSelection(stVals);
         }
         cascadeFilters();
         /* Downstream filters — apply after cascade so visible sets are correct */
-        if(p.has('msa'))msMsa.setSelection(new Set(p.get('msa').split(',')));
-        if(p.has('ur'))msUr.setSelection(new Set(p.get('ur').split(',')));
-        if(p.has('sy'))msSy.setSelection(new Set(p.get('sy').split(',')));
-        if(p.has('hd'))msHd.setSelection(new Set(p.get('hd').split(',')));
-        if(p.has('sn'))msSn.setSelection(new Set(p.get('sn').split(',')));
-        if(p.has('sh'))msSh.setSelection(new Set(p.get('sh').split(',')));
-        if(p.has('ss'))msSs.setSelection(new Set(p.get('ss').split(',')));
+        if(p.has('msa'))msMsa.setSelection(new Set(p.get('msa').split(FDLM)));
+        if(p.has('ur'))msUr.setSelection(new Set(p.get('ur').split(FDLM)));
+        if(p.has('sy'))msSy.setSelection(new Set(p.get('sy').split(FDLM)));
+        if(p.has('hd'))msHd.setSelection(new Set(p.get('hd').split(FDLM)));
+        if(p.has('sn'))msSn.setSelection(new Set(p.get('sn').split(FDLM)));
+        if(p.has('sh'))msSh.setSelection(new Set(p.get('sh').split(FDLM)));
+        if(p.has('ss'))msSs.setSelection(new Set(p.get('ss').split(FDLM)));
         /* Beds */
         if(p.has('blo'))document.getElementById('f-blo').value=p.get('blo');
         if(p.has('bhi'))document.getElementById('f-bhi').value=p.get('bhi');
